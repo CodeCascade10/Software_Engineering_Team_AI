@@ -1,0 +1,7 @@
+venv/
+__pycache__/
+*.pyc
+.env
+logs/workflow_logs/system.log
+generated_projects/generated_backend/
+.streamlit/
