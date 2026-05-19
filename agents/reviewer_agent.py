@@ -1,6 +1,6 @@
 from graph.state import GraphState
 
-from llm_providers import groq_llm
+from services.llm_service import groq_llm
 
 from tools.file_tools import append_log
 

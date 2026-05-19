@@ -1,6 +1,7 @@
 from graph.state import GraphState
 
 from services.llm_service import groq_llm
+from services.workflow_logger import save_workflow_log
 
 from tools.file_tools import (
     save_file,
@@ -28,6 +29,10 @@ def fix_agent(state: GraphState):
     backend_code = state.get(
         "backend_code",
         ""
+    )
+
+    project_id = state.get(
+        "project_id"
     )
 
     if not backend_code:
@@ -69,7 +74,24 @@ def fix_agent(state: GraphState):
         f"Return ONLY valid Python code.\n"
     )
 
+    print("FIXER START")
+
+    save_workflow_log(
+        project_id,
+        "fixer",
+        "Fix process started"
+    )
+
     response = llm.invoke(prompt)
+
+    print("FIXER END")
+
+    save_workflow_log(
+        project_id,
+        "fixer",
+        "Fix process completed",
+        "completed"
+    )
 
     improved_code = clean_code(
         response.content

@@ -1,0 +1,26 @@
+from fastapi import FastAPI
+
+from api.routes.test_db import router as test_db_router
+from api.routes.auth import router as auth_router
+from api.routes.users import router as users_router
+from api.routes.projects import router as projects_router
+from api.routes.workflow import router as workflow_router
+from api.routes.logs import router as logs_router
+
+
+app = FastAPI()
+
+
+app.include_router(test_db_router)
+app.include_router(auth_router)
+app.include_router(users_router)
+app.include_router(projects_router)
+app.include_router(workflow_router)
+app.include_router(logs_router)
+
+@app.get("/")
+async def root():
+
+    return {
+        "message": "AI Software Engineering Team Backend Running"
+    }

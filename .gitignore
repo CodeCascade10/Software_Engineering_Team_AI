@@ -1,7 +1,19 @@
+# Python
 venv/
 __pycache__/
 *.pyc
+
+# Environment
 .env
-logs/workflow_logs/system.log
-generated_projects/generated_backend/
-.streamlit/
+
+# Generated files
+generated_projects/
+
+# Node
+node_modules/
+
+# Logs
+*.log
+
+# OS
+.DS_Store

@@ -1,6 +1,7 @@
 from graph.state import GraphState
 
 from services.llm_service import groq_llm
+from services.workflow_logger import save_workflow_log
 
 from tools.file_tools import append_log
 
@@ -17,6 +18,10 @@ def planner_agent(state: GraphState):
     user_prompt = state.get(
         "user_prompt",
         ""
+    )
+
+    project_id = state.get(
+        "project_id"
     )
 
     if not user_prompt:
@@ -50,13 +55,32 @@ def planner_agent(state: GraphState):
         f"Return ONLY a clean bullet-point task list.\n"
     )
 
+    print("PLANNER START")
+
+    save_workflow_log(
+        project_id,
+        "planner",
+        "Planning started"
+    )
+
     response = llm.invoke(prompt)
+
+    print("PLANNER END")
+
+    save_workflow_log(
+        project_id,
+        "planner",
+        "Planning completed",
+        "completed"
+    )
 
     tasks = [
         task.strip()
         for task in response.content.split("\n")
         if task.strip()
     ]
+
+    print(tasks)
 
     append_log(
         "[Planner Agent] Task planning completed."
