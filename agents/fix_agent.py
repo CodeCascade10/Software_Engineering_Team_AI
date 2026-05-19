@@ -1,16 +1,14 @@
-from langchain_groq import ChatGroq
-
 from graph.state import GraphState
-from config import GROQ_API_KEY
 
-from tools.file_tools import save_file
-from tools.file_tools import append_log
+from llm_providers import groq_llm
 
-
-llm = ChatGroq(
-    groq_api_key=GROQ_API_KEY,
-    model_name="llama-3.3-70b-versatile"
+from tools.file_tools import (
+    save_file,
+    append_log
 )
+
+
+llm = groq_llm()
 
 
 def clean_code(code: str):
@@ -23,46 +21,70 @@ def clean_code(code: str):
 
 def fix_agent(state: GraphState):
 
-    append_log("[Fix Agent] Improving backend code...")
+    append_log(
+        "[Fix Agent] Improving backend code..."
+    )
 
-    backend_code = state["backend_code"]
-    review_feedback = state["review_feedback"]
+    backend_code = state.get(
+        "backend_code",
+        ""
+    )
 
-    prompt = f"""
-    You are a senior FastAPI engineer.
+    if not backend_code:
 
-    Improve the backend code using the review feedback.
+        append_log(
+            "[Fix Agent] No backend code found."
+        )
 
-    REVIEW FEEDBACK:
-    {review_feedback}
+        return {
+            "backend_code": "",
+            "active_model": "system-utility"
+        }
 
-    ORIGINAL BACKEND CODE:
-    {backend_code}
+    review_feedback = state.get(
+        "review_feedback",
+        ""
+    )
 
-    REQUIREMENTS:
-    - improve scalability
-    - improve security
-    - fix bad practices
-    - optimize architecture
-    - improve JWT handling
-    - improve readability
-    - ensure valid FastAPI code
+    prompt = (
+        f"You are a senior FastAPI engineer.\n\n"
 
-    Return ONLY valid Python code.
-    """
+        f"Improve the backend code using the review feedback.\n\n"
+
+        f"REVIEW FEEDBACK:\n"
+        f"{review_feedback}\n\n"
+
+        f"ORIGINAL BACKEND CODE:\n"
+        f"{backend_code}\n\n"
+
+        f"REQUIREMENTS:\n"
+        f"- improve scalability\n"
+        f"- improve security\n"
+        f"- fix bad practices\n"
+        f"- optimize architecture\n"
+        f"- improve JWT handling\n"
+        f"- improve readability\n"
+        f"- ensure valid FastAPI code\n\n"
+
+        f"Return ONLY valid Python code.\n"
+    )
 
     response = llm.invoke(prompt)
 
-    improved_code = clean_code(response.content)
+    improved_code = clean_code(
+        response.content
+    )
 
     save_file(
         "generated_projects/generated_backend/improved_main.py",
         improved_code
     )
 
-    append_log("[Fix Agent] Backend improvements completed.")
+    append_log(
+        "[Fix Agent] Backend improvements completed."
+    )
 
     return {
         "backend_code": improved_code,
-        "current_agent": "fix_agent"
+        "active_model": "groq-llama-3.3"
     }

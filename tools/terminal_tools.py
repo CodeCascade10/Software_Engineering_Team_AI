@@ -97,3 +97,58 @@ def run_fastapi_server():
             "stdout": "",
             "stderr": str(e)
         }
+    
+import requests
+
+
+def test_api_endpoint():
+
+    try:
+
+        response = requests.get(
+            "http://127.0.0.1:8000/"
+        )
+
+        return {
+            "success": response.status_code == 200,
+            "status_code": response.status_code,
+            "response": response.text
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "status_code": 500,
+            "response": str(e)
+        }
+    
+def run_terminal_command(command: str):
+
+    try:
+
+        result = subprocess.run(
+            command,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+
+        return {
+            "success": result.returncode == 0,
+            "stdout": result.stdout,
+            "stderr": result.stderr
+        }
+
+    except Exception as e:
+
+        return {
+            "success": False,
+            "stdout": "",
+            "stderr": str(e)
+        }
+    
+def git_command(command: str):
+
+    return run_terminal_command(command)

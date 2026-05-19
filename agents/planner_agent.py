@@ -1,42 +1,54 @@
-from langchain_groq import ChatGroq
 from graph.state import GraphState
-from config import GROQ_API_KEY
-from tools.file_tools import append_log
 
-llm = ChatGroq(
-    groq_api_key=GROQ_API_KEY,
-    model_name="llama-3.3-70b-versatile"
-)
-
+from llm_providers import groq_llm
 
 from tools.file_tools import append_log
+
+
+llm = groq_llm()
 
 
 def planner_agent(state: GraphState):
 
-    append_log("[Planner Agent] Planning project tasks...")
+    append_log(
+        "[Planner Agent] Planning project tasks..."
+    )
 
-    user_prompt = state["user_prompt"]
+    user_prompt = state.get(
+        "user_prompt",
+        ""
+    )
 
-    prompt = f"""
-    You are a senior software architect and project planner.
+    if not user_prompt:
 
-    Your job is to break down software projects into
-    structured development tasks.
+        append_log(
+            "[Planner Agent] No user prompt found."
+        )
 
-    USER PROJECT REQUEST:
-    {user_prompt}
+        return {
+            "tasks": [],
+            "active_model": "system-utility"
+        }
 
-    Create:
-    - clear tasks
-    - development phases
-    - backend requirements
-    - frontend requirements
-    - security requirements
-    - deployment considerations
+    prompt = (
+        f"You are a senior software architect and project planner.\n\n"
 
-    Return ONLY a clean bullet-point task list.
-    """
+        f"Your job is to break down software projects into "
+        f"structured development tasks.\n\n"
+
+        f"USER PROJECT REQUEST:\n"
+        f"{user_prompt}\n\n"
+
+        f"Create:\n"
+        f"- clear tasks\n"
+        f"- development phases\n"
+        f"- backend requirements\n"
+        f"- frontend requirements\n"
+        f"- security requirements\n"
+        f"- deployment considerations\n\n"
+
+        f"Return ONLY a clean bullet-point task list.\n"
+    )
 
     response = llm.invoke(prompt)
 
@@ -46,9 +58,11 @@ def planner_agent(state: GraphState):
         if task.strip()
     ]
 
-    append_log("[Planner Agent] Task planning completed.")
+    append_log(
+        "[Planner Agent] Task planning completed."
+    )
 
     return {
         "tasks": tasks,
-        "current_agent": "planner_agent"
+        "active_model": "groq-llama-3.3"
     }

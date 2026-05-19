@@ -1,18 +1,16 @@
+
 import re
 
-from langchain_groq import ChatGroq
-
 from graph.state import GraphState
-from config import GROQ_API_KEY
+from llm_providers import groq_llm
 
-from tools.file_tools import save_file
-from tools.file_tools import append_log
-
-
-llm = ChatGroq(
-    groq_api_key=GROQ_API_KEY,
-    model_name="llama-3.3-70b-versatile"
+from tools.file_tools import (
+    save_file,
+    append_log
 )
+
+
+llm = groq_llm()
 
 
 def clean_code(code: str):
@@ -39,41 +37,117 @@ def extract_files(response_text: str):
 
 def backend_agent(state: GraphState):
 
-    append_log("[Backend Agent] Generating multi-file backend project...")
+    append_log(
+        "[Backend Agent] Generating multi-file backend project..."
+    )
 
-    tasks = "\n".join(state["tasks"])
+    tasks = "\n".join(
+        state.get("tasks",[])
 
-    prompt = f"""
-You are a senior FastAPI backend architect.
+    prompt = (
+    f"You are a senior FastAPI backend architect.\n\n"
 
-Based on the following project tasks:
+    f"Based on the following project tasks:\n\n"
 
-{tasks}
+    f"{tasks}\n\n"
 
-Generate a production-ready FastAPI backend.
+    f"Generate a production-ready FastAPI backend.\n\n"
 
-REQUIREMENTS:
-- JWT authentication
-- modular architecture
-- proper imports
-- scalable structure
-- proper comments
-- clean code
-- error handling
+    f"REQUIREMENTS:\n"
+    f"- JWT authentication\n"
+    f"- modular architecture\n"
+    f"- proper imports\n"
+    f"- scalable structure\n"
+    f"- proper comments\n"
+    f"- clean code\n"
+    f"- error handling\n\n"
 
-Generate these files:
+    f"Generate these files:\n\n"
 
-1. main.py
-2. auth.py
-3. database.py
-4. models.py
-5. routes.py
-6. requirements.txt
+    f"1. main.py\n"
+    f"2. auth.py\n"
+    f"3. database.py\n"
+    f"4. models.py\n"
+    f"5. routes.py\n"
+    f"6. requirements.txt\n\n"
 
-IMPORTANT:
+    f"IMPORTANT:\n\n"
 
-Return response EXACTLY like this:
+    f"Return response EXACTLY like this:\n\n"
 
-FILE: main.py
-```python
-# code here
+    f"FILE: main.py\n"
+    f"```python\n"
+    f"# code here\n"
+    f"```\n\n"
+
+    f"FILE: auth.py\n"
+    f"```python\n"
+    f"# code here\n"
+    f"```\n\n"
+
+    f"FILE: database.py\n"
+    f"```python\n"
+    f"# code here\n"
+    f"```\n\n"
+
+    f"FILE: models.py\n"
+    f"```python\n"
+    f"# code here\n"
+    f"```\n\n"
+
+    f"FILE: routes.py\n"
+    f"```python\n"
+    f"# code here\n"
+    f"```\n\n"
+
+    f"FILE: requirements.txt\n"
+    f"```txt\n"
+    f"fastapi\n"
+    f"uvicorn\n"
+    f"sqlalchemy\n"
+    f"python-jose\n"
+    f"passlib\n"
+    f"bcrypt\n"
+    f"```\n"
+)
+    response = llm.invoke(prompt)
+
+    generated_code = response.content
+
+    files = extract_files(
+        generated_code
+    )
+
+    for filename, code in files:
+
+        cleaned_code = clean_code(code)
+
+        save_file(
+            f"generated_projects/generated_backend/{filename}",
+            cleaned_code
+        )
+
+        append_log(
+            f"[Backend Agent] Created file: {filename}"
+        )
+
+    append_log(
+        "[Backend Agent] Backend generation completed."
+    )
+
+    return {
+        "backend_code": generated_code,
+        "backend_summary": tasks,
+        "active_model": "groq-llama-3.3"
+    }
+    if not tasks:
+
+    append_log(
+        "[Backend Agent] No tasks found."
+    )
+
+    return {
+        "backend_code": "",
+        "backend_summary": "",
+        "active_model": "system-utility"
+    }

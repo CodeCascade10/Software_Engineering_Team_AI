@@ -9,7 +9,10 @@ def get_project_files(project_path: str):
 
         for file in files:
 
-            filepath = os.path.join(root, file)
+            filepath = os.path.join(
+                root,
+                file
+            )
 
             try:
 
@@ -28,6 +31,7 @@ def get_project_files(project_path: str):
                 })
 
             except Exception:
+
                 pass
 
     return files_data

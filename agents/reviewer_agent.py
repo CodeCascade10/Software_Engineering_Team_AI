@@ -1,53 +1,69 @@
-from langchain_groq import ChatGroq
-
 from graph.state import GraphState
-from config import GROQ_API_KEY
+
+from llm_providers import groq_llm
 
 from tools.file_tools import append_log
 
 
-llm = ChatGroq(
-    groq_api_key=GROQ_API_KEY,
-    model_name="llama-3.3-70b-versatile"
-)
+llm = groq_llm()
 
 
 def reviewer_agent(state: GraphState):
 
-    append_log("[Reviewer Agent] Reviewing generated backend code...")
+    append_log(
+        "[Reviewer Agent] Reviewing generated backend code..."
+    )
 
-    backend_code = state["backend_code"]
+    backend_code = state.get(
+        "backend_code",
+        ""
+    )
 
-    prompt = f"""
-    You are a senior software code reviewer.
+    if not backend_code:
 
-    Review the following FastAPI backend code.
+        append_log(
+            "[Reviewer Agent] No backend code found."
+        )
 
-    CHECK FOR:
-    - security vulnerabilities
-    - JWT authentication mistakes
-    - scalability issues
-    - bad coding practices
-    - missing imports
-    - invalid FastAPI patterns
-    - code readability
-    - architecture quality
+        return {
+            "review_feedback": (
+                "No backend code generated."
+            ),
+            "active_model": "system-utility"
+        }
 
-    PROVIDE:
-    - strengths
-    - weaknesses
-    - improvements
-    - optimization suggestions
+    prompt = (
+        f"You are a senior software code reviewer.\n\n"
 
-    BACKEND CODE:
-    {backend_code}
-    """
+        f"Review the following FastAPI backend code.\n\n"
+
+        f"CHECK FOR:\n"
+        f"- security vulnerabilities\n"
+        f"- JWT authentication mistakes\n"
+        f"- scalability issues\n"
+        f"- bad coding practices\n"
+        f"- missing imports\n"
+        f"- invalid FastAPI patterns\n"
+        f"- code readability\n"
+        f"- architecture quality\n\n"
+
+        f"PROVIDE:\n"
+        f"- strengths\n"
+        f"- weaknesses\n"
+        f"- improvements\n"
+        f"- optimization suggestions\n\n"
+
+        f"BACKEND CODE:\n"
+        f"{backend_code}\n"
+    )
 
     response = llm.invoke(prompt)
 
-    append_log("[Reviewer Agent] Code review completed.")
+    append_log(
+        "[Reviewer Agent] Code review completed."
+    )
 
     return {
         "review_feedback": response.content,
-        "current_agent": "reviewer_agent"
+        "active_model": "groq-llama-3.3"
     }

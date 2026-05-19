@@ -1,20 +1,19 @@
-from langchain_groq import ChatGroq
-
 from graph.state import GraphState
-from config import GROQ_API_KEY
 
-from tools.terminal_tools import run_python_file
-from tools.terminal_tools import install_requirements
+from llm_providers import groq_llm
 
-from tools.file_tools import save_file
-from tools.file_tools import append_log
-from tools.terminal_tools import run_fastapi_server
-
-
-llm = ChatGroq(
-    groq_api_key=GROQ_API_KEY,
-    model_name="llama-3.3-70b-versatile"
+from tools.terminal_tools import (
+    install_requirements,
+    run_fastapi_server
 )
+
+from tools.file_tools import (
+    save_file,
+    append_log
+)
+
+
+llm = groq_llm()
 
 
 def clean_code(code: str):
@@ -27,7 +26,9 @@ def clean_code(code: str):
 
 def debug_agent(state: GraphState):
 
-    append_log("[Debug Agent] Installing project dependencies...")
+    append_log(
+        "[Debug Agent] Installing project dependencies..."
+    )
 
     requirements_result = install_requirements(
         "generated_projects/generated_backend/requirements.txt"
@@ -47,14 +48,15 @@ def debug_agent(state: GraphState):
 
         return {
             "execution_output": requirements_result["stderr"],
-            "current_agent": "debug_agent"
+            "active_model": "system-utility"
         }
 
-    
-
-    append_log("[Debug Agent] Launching FastAPI server...")
+    append_log(
+        "[Debug Agent] Launching FastAPI server..."
+    )
 
     execution_result = run_fastapi_server()
+
     if execution_result["success"]:
 
         append_log(
@@ -63,40 +65,58 @@ def debug_agent(state: GraphState):
 
         return {
             "execution_output": execution_result["stdout"],
-            "current_agent": "debug_agent"
+            "active_model": "system-utility"
         }
 
     append_log(
         "[Debug Agent] Errors detected. Attempting automatic fixes..."
     )
 
-    backend_code = state["backend_code"]
+    backend_code = state.get(
+        "backend_code",
+        ""
+    )
 
-    prompt = f"""
-You are an expert Python debugger.
+    if not backend_code:
 
-The following FastAPI backend code failed during execution.
+        append_log(
+            "[Debug Agent] No backend code found."
+        )
 
-ERROR:
-{execution_result["stderr"]}
+        return {
+            "execution_output": (
+                "No backend code available for debugging."
+            ),
+            "active_model": "system-utility"
+        }
 
-CODE:
-{backend_code}
+    prompt = (
+        f"You are an expert Python debugger.\n\n"
 
-TASK:
-- fix runtime issues
-- fix syntax errors
-- fix import issues
-- fix FastAPI issues
-- ensure executable code
-- improve stability
+        f"The following FastAPI backend code failed during execution.\n\n"
 
-Return ONLY valid Python code.
-"""
+        f"ERROR:\n"
+        f"{execution_result['stderr']}\n\n"
+
+        f"CODE:\n"
+        f"{backend_code}\n\n"
+
+        f"TASK:\n"
+        f"- fix runtime issues\n"
+        f"- fix syntax errors\n"
+        f"- fix import issues\n"
+        f"- fix FastAPI issues\n"
+        f"- ensure executable code\n"
+        f"- improve stability\n\n"
+
+        f"Return ONLY valid Python code.\n"
+    )
 
     response = llm.invoke(prompt)
 
-    fixed_code = clean_code(response.content)
+    fixed_code = clean_code(
+        response.content
+    )
 
     save_file(
         "generated_projects/generated_backend/debugged_main.py",
@@ -110,5 +130,5 @@ Return ONLY valid Python code.
     return {
         "backend_code": fixed_code,
         "execution_output": execution_result["stderr"],
-        "current_agent": "debug_agent"
+        "active_model": "groq-llama-3.3"
     }
