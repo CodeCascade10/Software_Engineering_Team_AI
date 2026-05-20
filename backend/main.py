@@ -6,10 +6,18 @@ from api.routes.users import router as users_router
 from api.routes.projects import router as projects_router
 from api.routes.workflow import router as workflow_router
 from api.routes.logs import router as logs_router
+from fastapi.middleware.cors import CORSMiddleware
 
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 app.include_router(test_db_router)
 app.include_router(auth_router)

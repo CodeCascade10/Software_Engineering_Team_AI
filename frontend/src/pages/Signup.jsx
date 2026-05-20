@@ -35,7 +35,7 @@ export default function Signup() {
         formData
       );
 
-      navigate("/");
+      navigate("/login");
 
     } catch (err) {
 
@@ -46,11 +46,11 @@ export default function Signup() {
 
   return (
 
-    <div className="h-screen flex items-center justify-center">
+    <div className="flex flex-col gap-4 w-[350px] bg-zinc-900 p-8 rounded-xl">
 
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col gap-4 w-[350px]"
+        className="flex flex-col gap-4 w-[350px] bg-zinc-900 p-8 rounded-xl"
       >
 
         <h1 className="text-3xl font-bold">
@@ -87,7 +87,7 @@ export default function Signup() {
           Signup
         </button>
 
-        <Link to="/">
+        <Link to="/login">
           Already have an account?
         </Link>
 
