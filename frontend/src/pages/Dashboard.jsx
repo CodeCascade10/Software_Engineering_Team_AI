@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useAuth } from "../context/AuthContext";
 
@@ -12,6 +12,30 @@ export default function Dashboard() {
 
   const [loading, setLoading] = useState(false);
 
+  const [projects, setProjects] = useState([]);
+
+  const fetchProjects = async () => {
+
+    try {
+
+      const response = await API.get(
+        "/projects/my-projects"
+      );
+
+      setProjects(response.data);
+
+    } catch (err) {
+
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+
+    fetchProjects();
+
+  }, []);
+
   const createProject = async () => {
 
     if (!prompt) {
@@ -23,7 +47,7 @@ export default function Dashboard() {
 
       setLoading(true);
 
-      const response = await API.post(
+      await API.post(
 
         "/projects/create",
 
@@ -33,11 +57,11 @@ export default function Dashboard() {
         }
       );
 
-      console.log(response.data);
-
       alert("Project Created Successfully");
 
       setPrompt("");
+
+      fetchProjects();
 
     } catch (err) {
 
@@ -189,6 +213,53 @@ export default function Dashboard() {
             {loading ? "Generating..." : "Generate Project"}
 
           </button>
+
+        </div>
+
+      </section>
+
+      {/* Projects */}
+
+      <section className="relative z-10 px-10 pb-20">
+
+        <h2 className="text-4xl font-bold mb-10">
+          Your Projects
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+          {projects.map((project) => (
+
+            <div
+              key={project._id}
+              className="bg-zinc-900/70 border border-zinc-800 rounded-3xl p-6 backdrop-blur-xl hover:border-orange-500 transition"
+            >
+
+              <h3 className="text-2xl font-bold mb-3">
+                {project.title}
+              </h3>
+
+              <p className="text-zinc-400 text-sm mb-6 line-clamp-3">
+                {project.prompt}
+              </p>
+
+              <div className="flex items-center justify-between">
+
+                <span className="text-orange-400 capitalize">
+                  {project.status}
+                </span>
+
+                <button
+                  className="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-xl"
+                >
+                  Open
+                </button>
+
+              </div>
+
+            </div>
+
+          ))}
 
         </div>
 
