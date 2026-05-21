@@ -3,9 +3,114 @@
 @tailwind utilities;
 
 body {
-  margin: 0;
-  padding: 0;
-  background-color: black;
+  background: #080a0f;
   color: white;
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: Inter, sans-serif;
+}
+
+.noise-overlay {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 1px);
+  background-size: 4px 4px;
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.mesh-gradient {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.mesh-orb-1,
+.mesh-orb-2,
+.mesh-orb-3 {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(100px);
+  opacity: 0.2;
+}
+
+.mesh-orb-1 {
+  width: 400px;
+  height: 400px;
+  background: #f5a623;
+  top: -120px;
+  left: -120px;
+}
+
+.mesh-orb-2 {
+  width: 350px;
+  height: 350px;
+  background: #3b82f6;
+  bottom: -120px;
+  right: -100px;
+}
+
+.mesh-orb-3 {
+  width: 300px;
+  height: 300px;
+  background: #22c55e;
+  top: 40%;
+  left: 50%;
+}
+
+.glass-panel-heavy {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  backdrop-filter: blur(30px);
+  box-shadow:
+    0 0 40px rgba(0,0,0,0.35),
+    inset 0 1px rgba(255,255,255,0.04);
+}
+
+.gold-glow-text {
+  text-shadow: 0 0 20px rgba(245,166,35,0.25);
+}
+
+.bg-brand-gold {
+  background-color: #f5a623;
+}
+
+.text-brand-gold {
+  color: #f5a623;
+}
+
+.border-brand-gold {
+  border-color: #f5a623;
+}
+
+.text-brand-muted {
+  color: #94a3b8;
+}
+
+.text-brand-text {
+  color: #e5e7eb;
+}
+
+.bg-brand-goldDim {
+  background: rgba(245,166,35,0.08);
+}
+
+.text-brand-green {
+  color: #22c55e;
+}
+
+.text-brand-blue {
+  color: #3b82f6;
+}
+
+.border-brand-blue {
+  border-color: #3b82f6;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
 }

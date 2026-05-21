@@ -7,7 +7,7 @@ from api.routes.projects import router as projects_router
 from api.routes.workflow import router as workflow_router
 from api.routes.logs import router as logs_router
 from fastapi.middleware.cors import CORSMiddleware
-
+from api.routes.files import router as files_router
 
 app = FastAPI()
 
@@ -25,6 +25,7 @@ app.include_router(users_router)
 app.include_router(projects_router)
 app.include_router(workflow_router)
 app.include_router(logs_router)
+app.include_router(files_router)
 
 @app.get("/")
 async def root():
