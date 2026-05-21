@@ -36,6 +36,27 @@ export default function Dashboard() {
 
   }, []);
 
+
+  const startWorkflow = async (projectId) => {
+
+  try {
+
+    await API.post(
+      `/workflow/start/${projectId}`
+    );
+
+    alert("Workflow Started Successfully");
+
+    fetchProjects();
+
+  } catch (err) {
+
+    console.error(err);
+
+    alert("Workflow Failed");
+  }
+};
+
   const createProject = async () => {
 
     if (!prompt) {
@@ -74,6 +95,8 @@ export default function Dashboard() {
       setLoading(false);
     }
   };
+
+
 
   return (
 
@@ -250,11 +273,11 @@ export default function Dashboard() {
                 </span>
 
                 <button
-                  className="bg-orange-500 hover:bg-orange-600 px-4 py-2 rounded-xl"
+                  onClick={() => startWorkflow(project._id)}
+                  className="flex-1 bg-orange-500 hover:bg-orange-600 py-3 rounded-xl font-bold transition"
                 >
-                  Open
-                </button>
-
+                Run Workflow
+              </button>
               </div>
 
             </div>
