@@ -90,3 +90,12 @@ def planner_agent(state: GraphState):
         "tasks": tasks,
         "active_model": "groq-llama-3.3"
     }
+
+async def run_planner_agent(project_id: str):
+
+    state = {
+        "user_prompt": "Build an AI SaaS platform",
+        "project_id": project_id
+    }
+
+    planner_agent(state)

@@ -117,15 +117,86 @@ export default function Dashboard() {
     setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 4000);
   };
 
+const fetchProjects = async () => {
+
+  try {
+
+    const response = await API.get(
+
+      "/projects/my-projects"
+
+    );
+
+    setProjects(response.data);
+
+  } catch (err) {
+
+    console.error(err);
+  }
+};
+
   /* ── Original API Data fetchers ── */
-  const fetchProjects = async () => {
-    try {
-      const res = await API.get("/projects/my-projects");
-      setProjects(res.data);
-    } catch (err) { 
-      console.error(err); 
+const fetchProjectFiles = async (projectId) => {
+
+  try {
+
+    const cacheKey = `project_files_${projectId}`;
+
+    const cachedData = localStorage.getItem(cacheKey);
+
+    if (cachedData) {
+
+      const parsed = JSON.parse(cachedData);
+
+      const now = Date.now();
+
+      const THIRTY_MINUTES = 30 * 60 * 1000;
+
+      if (
+        now - parsed.timestamp <
+        THIRTY_MINUTES
+      ) {
+
+        console.log(
+          "Using cached project files"
+        );
+
+        setProjectFiles(parsed.files);
+
+        return;
+      }
+
+      localStorage.removeItem(cacheKey);
     }
-  };
+
+    const response = await API.get(
+
+      `/files/${projectId}`
+
+    );
+
+    const files = response.data.files;
+
+    setProjectFiles(files);
+
+    localStorage.setItem(
+
+      cacheKey,
+
+      JSON.stringify({
+
+        files,
+
+        timestamp: Date.now()
+
+      })
+    );
+
+  } catch (err) {
+
+    console.error(err);
+  }
+};
 
   const fetchLogs = async (projectId) => {
     try {
@@ -166,6 +237,41 @@ export default function Dashboard() {
     }
   };
 
+ const runEverything = async (projectId) => {
+
+  try {
+
+    localStorage.removeItem(
+      `project_files_${projectId}`
+    );
+
+    showToast(
+      "Starting full AI pipeline...",
+      "success"
+    );
+
+    await API.post(
+      `/workflow/run-all/${projectId}`
+    );
+
+    showToast(
+      "Full pipeline started successfully",
+      "success"
+    );
+
+    fetchProjects();
+
+  } catch (err) {
+
+    console.error(err);
+
+    showToast(
+      "Pipeline execution failed",
+      "error"
+    );
+  }
+};
+
   const createProject = async () => {
     if (!prompt.trim()) { 
       pushToast("Describe your project sandbox model first.", "error"); 
@@ -188,14 +294,14 @@ export default function Dashboard() {
   /* ── Polling ── */
   useEffect(() => {
     fetchProjects();
-    const iv = setInterval(fetchProjects, 2000);
+    const iv = setInterval(fetchProjects, 5000);
     return () => clearInterval(iv);
   }, []);
 
   useEffect(() => {
     if (!expandedProject) return;
     fetchLogs(expandedProject);
-    const iv = setInterval(() => fetchLogs(expandedProject), 2000);
+    const iv = setInterval(() => fetchLogs(expandedProject), 5000);
     return () => clearInterval(iv);
   }, [expandedProject]);
 
@@ -621,6 +727,25 @@ export default function Dashboard() {
                         <FiPlay />
                         <span>Run Orchestration</span>
                       </button>
+
+                      <button
+                          onClick={() => runEverything(project._id)}
+                          className="flex-1 min-w-[180px] bg-gradient-to-r from-orange-500 to-amber-400 hover:scale-[1.02] py-3 rounded-xl font-bold transition-all duration-300 shadow-[0_0_30px_rgba(251,191,36,0.25)]"
+                        >
+
+                        ⚡ Generate Everything
+
+                      </button>
+                                            <a
+                        href={`http://127.0.0.1:8000/files/download/${project._id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="flex-1 min-w-[180px] bg-zinc-800 hover:bg-zinc-700 py-3 rounded-xl font-semibold transition-all duration-300 text-center"
+                      >
+
+                          ⬇ Download ZIP
+
+                        </a>
 
                       <button
                         onClick={() => setExpandedProject(isLogsOpen ? null : project._id)}

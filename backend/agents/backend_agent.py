@@ -176,3 +176,17 @@ def backend_agent(state: GraphState):
         "backend_summary": tasks,
         "active_model": "groq-llama-3.3"
     }
+
+async def run_backend_agent(project_id: str):
+
+    state = {
+        "tasks": [
+            "Build authentication system",
+            "Create FastAPI backend",
+            "Create JWT auth",
+            "Build scalable routes"
+        ],
+        "project_id": project_id
+    }
+
+    backend_agent(state)

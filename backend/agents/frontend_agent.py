@@ -171,3 +171,17 @@ def frontend_agent(state: GraphState):
         ),
         "active_model": "groq-llama-3.3"
     }
+
+async def run_frontend_agent(project_id: str):
+
+    state = {
+        "tasks": [
+            "Create React frontend",
+            "Build dashboard UI",
+            "Create authentication pages",
+            "Build responsive layout"
+        ],
+        "project_id": project_id
+    }
+
+    frontend_agent(state)

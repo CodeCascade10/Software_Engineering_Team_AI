@@ -83,3 +83,13 @@ def reviewer_agent(state: GraphState):
         "review_feedback": feedback,
         "active_model": "groq-llama-3.3"
     }
+
+async def run_reviewer_agent(project_id: str):
+
+    state = {
+        "backend_code": "Sample backend code",
+        "frontend_code": "Sample frontend code",
+        "project_id": project_id
+    }
+
+    reviewer_agent(state)
