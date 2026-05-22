@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+bimport { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
@@ -245,7 +245,7 @@ const fetchProjectFiles = async (projectId) => {
       `project_files_${projectId}`
     );
 
-    showToast(
+   pushToast(
       "Starting full AI pipeline...",
       "success"
     );
@@ -254,9 +254,9 @@ const fetchProjectFiles = async (projectId) => {
       `/workflow/run-all/${projectId}`
     );
 
-    showToast(
-      "Full pipeline started successfully",
-      "success"
+      showToast(
+      "Pipeline execution failed",
+      "error"
     );
 
     fetchProjects();
@@ -267,6 +267,39 @@ const fetchProjectFiles = async (projectId) => {
 
     showToast(
       "Pipeline execution failed",
+      "error"
+    );
+  }
+};
+
+const runAgent = async (
+  projectId,
+  agentType
+) => {
+  try {
+
+    pushToast(
+      `${agentType} agent started`,
+      "success"
+    );
+
+    await API.post(
+      `/agents/${agentType}/${projectId}`
+    );
+
+    pushToast(
+      `${agentType} completed`,
+      "success"
+    );
+
+    fetchProjects();
+
+  } catch (err) {
+
+    console.error(err);
+
+    pushToast(
+      `${agentType} failed`,
       "error"
     );
   }
@@ -461,36 +494,136 @@ const fetchProjectFiles = async (projectId) => {
             <h2 className="text-xs font-mono font-bold tracking-widest uppercase text-brand-muted">Autonomous Agent Matrix Nodes</h2>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-            {Object.entries(AGENT_META).map(([name, meta], index) => {
-              // Calculate different progress metrics to look futuristic
-              const progresses = [92, 84, 79, 95, 100, 88];
-              const curProgress = progresses[index];
-              
-              return (
-                <div 
-                  key={name}
-                  className="bg-[#0d1117]/60 border border-white/[0.05] hover:border-brand-gold/40 rounded-2xl p-4 flex flex-col justify-between gap-4 transition-all duration-300 hover:-translate-y-1 relative group hover:shadow-[0_0_30px_rgba(245,166,35,0.06)]"
-                >
-                  <div className="absolute top-0 right-0 w-16 h-px bg-gradient-to-l from-brand-gold/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  
-                  <div>
-                    {/* Icon and live pulse */}
-                    <div className="flex items-center justify-between">
-                      <div className="w-9 h-9 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center">
-                        {meta.icon}
-                      </div>
-                      <div className="flex items-center gap-1 bg-white/[0.02] border border-white/[0.05] px-2 py-0.5 rounded-full">
-                        <span className="w-1 h-1 rounded-full bg-brand-green animate-pulse" />
-                        <span className="text-[8px] font-mono uppercase text-brand-green">Live</span>
-                      </div>
-                    </div>
+         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+  {Object.entries(AGENT_META).map(([name, meta], index) => {
 
-                    {/* Agent Name */}
-                    <div className="mt-3.5">
-                      <div className="text-xs font-bold text-white tracking-wide">{name}</div>
-                      <div className="text-[9px] font-mono uppercase text-brand-muted mt-0.5">{meta.tag}</div>
-                    </div>
+    // Dynamic fake progress
+    const progresses = [92, 84, 79, 95, 100, 88];
+    const curProgress = progresses[index];
+
+    return (
+      <div
+        key={name}
+        onClick={() => {
+
+          if (!projects.length) {
+
+            pushToast(
+              "Create a project first",
+              "error"
+            );
+
+            return;
+          }
+
+          runAgent(
+            projects[0]._id,
+            name.toLowerCase().replace(/\s+/g, "-")
+          );
+        }}
+        className="
+          bg-[#0d1117]/60
+          border border-white/[0.05]
+          hover:border-brand-gold/40
+          rounded-2xl
+          p-4
+          flex flex-col
+          justify-between
+          gap-4
+          transition-all
+          duration-300
+          hover:-translate-y-1
+          relative
+          group
+          hover:shadow-[0_0_30px_rgba(245,166,35,0.06)]
+          cursor-pointer
+        "
+      >
+
+        {/* Top glow line */}
+        <div className="absolute top-0 right-0 w-16 h-px bg-gradient-to-l from-brand-gold/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+
+        <div>
+
+          {/* Icon and Live Pulse */}
+          <div className="flex items-center justify-between">
+
+            <div className="w-9 h-9 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-center">
+              {meta.icon}
+            </div>
+
+            <div className="flex items-center gap-1 bg-white/[0.02] border border-white/[0.05] px-2 py-0.5 rounded-full">
+              <span className="w-1 h-1 rounded-full bg-brand-green animate-pulse" />
+              <span className="text-[8px] font-mono uppercase text-brand-green">
+                Live
+              </span>
+            </div>
+
+          </div>
+
+          {/* Agent Name */}
+          <div className="mt-3.5">
+
+            <div className="text-xs font-bold text-white tracking-wide">
+              {name}
+            </div>
+
+            <div className="text-[9px] font-mono uppercase text-brand-muted mt-0.5">
+              {meta.tag}
+            </div>
+
+          </div>
+
+          {/* Description */}
+          <p className="text-[10px] text-brand-muted mt-2 leading-relaxed font-light">
+            {meta.desc}
+          </p>
+
+        </div>
+
+        {/* Bottom Metrics */}
+        <div className="border-t border-white/[0.04] pt-2.5 space-y-1.5">
+
+          <div className="text-[8px] font-mono uppercase tracking-widest text-brand-muted">
+            Tasking
+          </div>
+
+          <div
+            className="text-[10px] font-mono text-brand-text truncate"
+            title={meta.task}
+          >
+            {meta.task}
+          </div>
+
+          {/* Progress */}
+          <div className="space-y-1">
+
+            <div className="flex items-center justify-between text-[8px] font-mono text-brand-muted">
+              <span>Rate</span>
+              <span className="font-bold text-white">
+                {curProgress}%
+              </span>
+            </div>
+
+            <div className="h-1 bg-white/[0.04] rounded-full overflow-hidden">
+
+              <div
+                className="h-full bg-gradient-to-r from-brand-gold to-amber-300 rounded-full transition-all duration-1000"
+                style={{
+                  width: `${curProgress}%`
+                }}
+              />
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    );
+  })}
+</div>
 
                     {/* Core details */}
                     <p className="text-[10px] text-brand-muted mt-2 leading-relaxed font-light">{meta.desc}</p>
