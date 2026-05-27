@@ -18,6 +18,8 @@ import AgentGrid from "../components/dashboard/AgentGrid";
 
 import useDashboardBuilder from "../hooks/useDashboardBuilder";
 
+import WorkflowConsole from "../components/dashboard/WorkflowConsole";
+
 const ALL_COMMANDS = [
   {
     cmd: "Create Project",
@@ -72,6 +74,10 @@ export default function NewDashboard() {
 
     isGenerating,
     setIsGenerating,
+
+    logs,
+
+    handleStartWorkflow,
 
     // telemetry
     telemetryStats,
@@ -158,14 +164,7 @@ export default function NewDashboard() {
           "Initializing autonomous AI engineering team..."
         );
 
-        await new Promise((res) =>
-          setTimeout(res, 1800)
-        );
-
-        pushToast(
-          `${workflowMode} workflow launched using ${runtime}`,
-          "success"
-        );
+        await handleStartWorkflow();
 
         setActiveTab("sandbox");
 
@@ -263,6 +262,11 @@ export default function NewDashboard() {
               handleGenerateProject
             }
 
+            isGenerating={isGenerating}
+          />
+
+          <WorkflowConsole
+            logs={logs}
             isGenerating={isGenerating}
           />
 

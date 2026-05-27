@@ -1,3 +1,7 @@
+import { useState } from "react";
+
+import { simulateWorkflow } from "../services/workflowSimulator";
+
 import useWorkspace from "./useWorkspace";
 
 import useTelemetry from "./useTelemetry";
@@ -23,6 +27,9 @@ import useSandboxActions from "./useSandboxActions";
 import useAgentActions from "./useAgentActions";
 
 import useClusterActions from "./useClusterActions";
+
+
+
 
 export default function useDashboardBuilder(
   ALL_COMMANDS
@@ -146,6 +153,24 @@ export default function useDashboardBuilder(
 
       ...cluster,
     });
+  
+
+  const handleStartWorkflow =
+  async () => {
+
+    await simulateWorkflow({
+
+      setLogs,
+
+      setIsGenerating,
+
+      pushToast,
+
+      workflowMode,
+
+      runtime,
+    });
+  };
 
   return {
 
@@ -197,6 +222,7 @@ export default function useDashboardBuilder(
     // logs
     logs,
     setLogs,
+    handleStartWorkflow,
 
     // sandbox
     ...sandbox,
