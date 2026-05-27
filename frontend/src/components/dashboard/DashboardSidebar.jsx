@@ -1,33 +1,30 @@
 import {
-  FiGrid,
-  FiCpu,
-  FiActivity,
+  FiLayers,
   FiServer,
+  FiCode,
+  FiShield,
 } from "react-icons/fi";
 
 const tabs = [
   {
-    id: "sandbox",
-    label: "Sandbox",
-    icon: FiGrid,
+    id: "planner",
+    label: "Planner",
+    icon: FiLayers,
   },
-
   {
-    id: "agents",
-    label: "Agents",
-    icon: FiCpu,
-  },
-
-  {
-    id: "metrics",
-    label: "Metrics",
-    icon: FiActivity,
-  },
-
-  {
-    id: "cluster",
-    label: "Cluster",
+    id: "backend",
+    label: "Backend",
     icon: FiServer,
+  },
+  {
+    id: "frontend",
+    label: "Frontend",
+    icon: FiCode,
+  },
+  {
+    id: "reviewer",
+    label: "Reviewer",
+    icon: FiShield,
   },
 ];
 

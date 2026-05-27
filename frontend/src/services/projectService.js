@@ -69,40 +69,131 @@ export async function fetchProjectFiles(
 
     const mockFiles = [
       {
-        file_name: "main.py",
+        file_name: "architecture.md",
+        content: `# Autonomous MERN System Architecture
 
-        content:
-`from fastapi import FastAPI
+## 1. Overview
+High-performance developer workbench architected by **CodeNexus AI Agents**.
+This application integrates a Python FastAPI service layer with a dynamic React layout.
 
-app = FastAPI()
+## 2. Database Model
+- **Users**: Unique ID, Email, Password Hash, Created At.
+- **Audits**: Audit ID, Source Code Hash, Vulnerabilities found, Quality Index.
 
-@app.get("/")
-def home():
-    return {
-        "message": "AI Software Team Running"
-    }`,
+## 3. Microservice Infrastructure
+- **FastAPI Core**: Port \`8000\` inside secure worker pods.
+- **Uvicorn Daemon**: Asynchronous gateway loop.
+- **Frontend App**: SPA mounted on client browser, optimized with Tailwind styling.
+
+## 4. Software Engineering Deliverables
+- **Planner Phase**: Done. Target blueprint saved to \`architecture.md\`.
+- **Backend Phase**: Done. FastAPI handlers mounted under \`main.py\`, \`database.py\`, and \`auth.py\`.
+- **Frontend Phase**: Done. Visual component systems packaged inside \`App.jsx\`.
+- **Reviewer Phase**: Ready. AI static auditor active.`,
       },
+      {
+        file_name: "main.py",
+        content: `from fastapi import FastAPI, Depends
+from auth import verify_jwt
+from database import get_db
 
+app = FastAPI(title="CodeNexus Core API")
+
+@app.get("/api/v1/health")
+def health_check():
+    return {
+        "status": "healthy",
+        "compliance": "SOC2 Verified",
+        "nodes": 6
+    }
+
+@app.get("/api/v1/metrics", dependencies=[Depends(verify_jwt)])
+def get_system_metrics():
+    return {
+        "throughput": "1.2 GB/s",
+        "latency": "0.10s",
+        "active_sessions": 482
+    }
+`,
+      },
+      {
+        file_name: "database.py",
+        content: `import os
+from pymongo import MongoClient
+
+def get_db():
+    mongo_uri = os.getenv("MONGO_URI", "mongodb://localhost:27017")
+    client = MongoClient(mongo_uri)
+    return client.codenexus_production
+`,
+      },
+      {
+        file_name: "auth.py",
+        content: `from fastapi import Header, HTTPException
+
+def verify_jwt(authorization: str = Header(...)):
+    if not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Invalid token header")
+    
+    token = authorization.split(" ")[1]
+    if not token.startswith("mock_jwt"):
+        raise HTTPException(status_code=403, detail="Signature verification failed")
+    
+    return {"user": "architect", "role": "admin"}
+`,
+      },
       {
         file_name: "requirements.txt",
-
-        content:
-`fastapi
-uvicorn
-pydantic`,
+        content: `fastapi>=0.136.0
+uvicorn>=0.47.0
+pymongo>=4.17.0
+python-jose>=3.5.0
+`,
       },
-
       {
-        file_name: "docker-compose.yml",
+        file_name: "App.jsx",
+        content: `import React, { useState } from "react";
+import { FiZap, FiCheck, FiTerminal } from "react-icons/fi";
 
-        content:
-`version: '3'
+export default function SaaSPreview() {
+  const [active, setActive] = useState(true);
 
-services:
-  api:
-    build: .
-    ports:
-      - "8000:8000"`,
+  return (
+    <div className="min-h-screen bg-[#080a0f] text-white flex flex-col p-8 font-sans">
+      <header className="flex justify-between items-center pb-6 border-b border-white/5">
+        <h1 className="text-xl font-bold tracking-wider text-brand-gold">Generated App Console</h1>
+        <span className="px-3 py-1 bg-brand-green/10 border border-brand-green/20 rounded-full text-xs text-brand-green uppercase font-mono font-bold flex items-center gap-1.5 animate-pulse">
+          <span className="w-1.5 h-1.5 bg-brand-green rounded-full" /> Sandbox Active
+        </span>
+      </header>
+      <main className="flex-1 py-10 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="bg-white/[0.01] border border-white/[0.04] p-6 rounded-2xl">
+          <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-brand-blue"><FiZap /> System Health</h2>
+          <div className="space-y-3">
+            <div className="flex justify-between text-sm"><span className="text-brand-muted">Gateway Endpoint</span><span className="font-mono text-xs">/api/v1/health</span></div>
+            <div className="flex justify-between text-sm"><span className="text-brand-muted">Latency Status</span><span className="text-brand-green font-semibold">0.10s (Optimal)</span></div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
+`,
+      },
+      {
+        file_name: "package.json",
+        content: `{
+  "name": "nexus-saas-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-icons": "^5.0.0",
+    "tailwindcss": "^3.4.0"
+  }
+}
+`,
       },
     ];
 

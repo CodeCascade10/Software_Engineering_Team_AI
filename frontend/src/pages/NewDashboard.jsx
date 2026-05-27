@@ -166,7 +166,11 @@ export default function NewDashboard() {
 
         await handleStartWorkflow();
 
-        setActiveTab("sandbox");
+        if (workflowMode === "Reviewer Only") {
+          setActiveTab("reviewer");
+        } else {
+          setActiveTab("planner");
+        }
 
       } catch (err) {
 
@@ -236,46 +240,27 @@ export default function NewDashboard() {
       }
 
       hero={
-        <div className="space-y-8">
+        activeTab === "planner" && (!openedProject || isGenerating) ? (
+          <div className="space-y-8">
+            <PromptOrchestrator
+              promptInput={promptInput}
+              setPromptInput={setPromptInput}
+              workflowMode={workflowMode}
+              setWorkflowMode={setWorkflowMode}
+              stack={stack}
+              setStack={setStack}
+              runtime={runtime}
+              setRuntime={setRuntime}
+              handleGenerateProject={handleGenerateProject}
+              isGenerating={isGenerating}
+            />
 
-          <HeroSection
-            telemetryStats={
-              telemetryStats
-            }
-          />
-
-          <PromptOrchestrator
-
-            promptInput={promptInput}
-            setPromptInput={setPromptInput}
-
-            workflowMode={workflowMode}
-            setWorkflowMode={setWorkflowMode}
-
-            stack={stack}
-            setStack={setStack}
-
-            runtime={runtime}
-            setRuntime={setRuntime}
-
-            handleGenerateProject={
-              handleGenerateProject
-            }
-
-            isGenerating={isGenerating}
-          />
-
-          <WorkflowConsole
-            logs={logs}
-            isGenerating={isGenerating}
-          />
-
-          <AgentGrid
-            handleAgentMatrixClick={
-              handleAgentMatrixClick
-            }
-          />
-        </div>
+            <WorkflowConsole
+              logs={logs}
+              isGenerating={isGenerating}
+            />
+          </div>
+        ) : null
       }
 
       sidebar={
@@ -287,54 +272,26 @@ export default function NewDashboard() {
 
       content={
         <DashboardContent
-
           activeTab={activeTab}
-
           sandboxProps={{
-
             projectFiles,
-
             openedProject,
-
             activeFileTab,
-
             handleSelectFile,
-
             editingFileContent,
             setEditingFileContent,
-
             handleSaveFileContent,
-
             handleRunScript,
-
             isEditingFile,
             setIsEditingFile,
-
             isRunningFileScript,
-
             activeFileTerminalOutput,
-          }}
-
-          clusterProps={{
-
-            clusterPods,
-
-            handleProvisionPod,
-
-            handleScaleDownPod,
-
-            isClusterScaling,
-          }}
-
-          agentProps={{
-
-            selectedAgentNode,
-
-            agentDetails,
-
-            agentDiagnosticLogs,
-
-            isAgentDiagnosing,
+            onResetWorkspace: () => {
+              setOpenedProject(null);
+              setProjectFiles({});
+              setPromptInput("");
+              setLogs([]);
+            },
           }}
         />
       }

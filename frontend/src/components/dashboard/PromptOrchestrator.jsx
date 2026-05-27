@@ -98,54 +98,93 @@ export default function PromptOrchestrator({
 
           {/* FEATURES */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-6">
-
-            <div className="rounded-2xl border border-white/[0.05] bg-black/20 p-4">
-              <FiLayers className="text-brand-gold text-lg mb-3" />
-
+            <button
+              onClick={() => {
+                setWorkflowMode("Planner Only");
+                if (!promptInput.trim()) {
+                  setPromptInput("Design a high-level system architecture blueprint for a secure MERN application with database schemas.");
+                }
+              }}
+              className={`text-left rounded-2xl border p-4 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
+                workflowMode === "Planner Only"
+                  ? "bg-brand-gold/10 border-brand-gold/30 shadow-[0_0_20px_rgba(245,166,35,0.15)]"
+                  : "bg-black/20 border-white/[0.05] hover:bg-black/35 hover:border-white/[0.12]"
+              }`}
+            >
+              <FiLayers className={`${workflowMode === "Planner Only" ? "text-brand-gold" : "text-brand-muted"} text-lg mb-3`} />
               <div className="text-white font-semibold text-sm">
                 Architecture
               </div>
-
               <div className="text-brand-muted text-xs mt-1">
                 System design generation
               </div>
-            </div>
+            </button>
 
-            <div className="rounded-2xl border border-white/[0.05] bg-black/20 p-4">
-              <FiCode className="text-brand-blue text-lg mb-3" />
-
+            <button
+              onClick={() => {
+                setWorkflowMode("Full Team");
+                if (!promptInput.trim()) {
+                  setPromptInput("Generate a full-stack SaaS platform with a React dashboard, a Python FastAPI backend, and JWT secure auth.");
+                }
+              }}
+              className={`text-left rounded-2xl border p-4 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
+                workflowMode === "Full Team"
+                  ? "bg-brand-blue/10 border-brand-blue/30 shadow-[0_0_20px_rgba(74,158,255,0.15)]"
+                  : "bg-black/20 border-white/[0.05] hover:bg-black/35 hover:border-white/[0.12]"
+              }`}
+            >
+              <FiCode className={`${workflowMode === "Full Team" ? "text-brand-blue" : "text-brand-muted"} text-lg mb-3`} />
               <div className="text-white font-semibold text-sm">
                 Fullstack Code
               </div>
-
               <div className="text-brand-muted text-xs mt-1">
                 Backend + frontend generation
               </div>
-            </div>
+            </button>
 
-            <div className="rounded-2xl border border-white/[0.05] bg-black/20 p-4">
-              <FiShield className="text-purple-400 text-lg mb-3" />
-
+            <button
+              onClick={() => {
+                setWorkflowMode("Reviewer Only");
+                if (!promptInput.trim()) {
+                  setPromptInput("Review the backend database connection pool and verifying auth routers for latency vulnerabilities.");
+                }
+              }}
+              className={`text-left rounded-2xl border p-4 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
+                workflowMode === "Reviewer Only"
+                  ? "bg-purple-500/10 border-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.15)]"
+                  : "bg-black/20 border-white/[0.05] hover:bg-black/35 hover:border-white/[0.12]"
+              }`}
+            >
+              <FiShield className={`${workflowMode === "Reviewer Only" ? "text-purple-400" : "text-brand-muted"} text-lg mb-3`} />
               <div className="text-white font-semibold text-sm">
                 Code Review
               </div>
-
               <div className="text-brand-muted text-xs mt-1">
                 Security & QA analysis
               </div>
-            </div>
+            </button>
 
-            <div className="rounded-2xl border border-white/[0.05] bg-black/20 p-4">
-              <FiTerminal className="text-brand-green text-lg mb-3" />
-
+            <button
+              onClick={() => {
+                setWorkflowMode("Debugger Only");
+                if (!promptInput.trim()) {
+                  setPromptInput("Boot static execution sandbox containers to diagnose potential service memory leaks.");
+                }
+              }}
+              className={`text-left rounded-2xl border p-4 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
+                workflowMode === "Debugger Only"
+                  ? "bg-brand-green/10 border-brand-green/30 shadow-[0_0_20px_rgba(74,222,128,0.15)]"
+                  : "bg-black/20 border-white/[0.05] hover:bg-black/35 hover:border-white/[0.12]"
+              }`}
+            >
+              <FiTerminal className={`${workflowMode === "Debugger Only" ? "text-brand-green" : "text-brand-muted"} text-lg mb-3`} />
               <div className="text-white font-semibold text-sm">
                 Sandbox Runtime
               </div>
-
               <div className="text-brand-muted text-xs mt-1">
                 Execute generated projects
               </div>
-            </div>
+            </button>
           </div>
         </div>
 

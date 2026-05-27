@@ -23,22 +23,7 @@ export default function Navbar({
           </span>
         </div>
 
-        {/* Tabs */}
-        <div className="hidden md:flex items-center gap-1">
-          {["sandbox", "agents", "metrics", "cluster"].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`text-xs font-mono font-bold tracking-widest uppercase px-3.5 py-1.5 rounded-xl border transition-all ${
-                activeTab === tab
-                  ? "bg-white/[0.03] border-white/[0.08] text-white"
-                  : "border-transparent text-brand-muted hover:text-white"
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </div>
+        {/* Nav tabs removed for clean streamlined header */}
       </div>
 
       {/* Right Side */}

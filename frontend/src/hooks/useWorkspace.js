@@ -4,7 +4,7 @@ export default function useWorkspace() {
 
   // DASHBOARD TAB
   const [activeTab, setActiveTab] =
-    useState("sandbox");
+    useState("planner");
 
   // WORKSPACE VIEW
   const [
