@@ -1,22 +1,31 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import {
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
 
 import Login from "../pages/Login";
+
 import Signup from "../pages/Signup";
-import Dashboard from "../pages/Dashboard";
+
+import NewDashboard from "../pages/NewDashboard";
 
 import ProtectedRoute from "../components/ProtectedRoute";
 
 export default function AppRoutes() {
 
   return (
-
     <Routes>
 
+      {/* ROOT */}
       <Route
         path="/"
-        element={<Navigate to="/login" />}
+        element={
+          <Navigate to="/login" />
+        }
       />
 
+      {/* AUTH */}
       <Route
         path="/login"
         element={<Login />}
@@ -27,15 +36,23 @@ export default function AppRoutes() {
         element={<Signup />}
       />
 
+      {/* DASHBOARD */}
       <Route
         path="/dashboard"
         element={
           <ProtectedRoute>
-            <Dashboard />
+            <NewDashboard />
           </ProtectedRoute>
         }
       />
 
+      {/* FALLBACK */}
+      <Route
+        path="*"
+        element={
+          <Navigate to="/login" />
+        }
+      />
     </Routes>
   );
 }

@@ -5,7 +5,7 @@ import { FiMail, FiLock, FiArrowRight, FiGithub, FiCpu, FiTerminal, FiZap, FiAct
 import { FcGoogle } from "react-icons/fc";
 
 import API from "../api/axios";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Login() {
   const navigate = useNavigate();

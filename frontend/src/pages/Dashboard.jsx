@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
+import Navbar from "../components/dashboard/Navbar";
+import HeroSection from "../components/dashboard/HeroSection";
+import AgentGrid from "../components/dashboard/AgentGrid";
+import ToastContainer from "../components/dashboard/ToastContainer";
+import CommandPalette from "../components/dashboard/CommandPalette";
+import useTelemetry from "../hooks/useTelemetry";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   FiCpu, FiTerminal, FiZap, FiActivity, FiLayers, FiSearch, 
