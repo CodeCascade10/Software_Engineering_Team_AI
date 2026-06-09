@@ -3,7 +3,7 @@ from services.llm_service import groq_llm
 
 async def review_code(code: str, language: str):
 
-    llm = groq_llm()
+    client = groq_llm()
 
     prompt = f"""
 You are an expert senior software engineer.
@@ -21,9 +21,17 @@ Code:
 {code}
 """
 
-    response = llm.invoke(prompt)
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ]
+    )
 
     return {
         "success": True,
-        "review": response.content
+        "review": response.choices[0].message.content
     }
