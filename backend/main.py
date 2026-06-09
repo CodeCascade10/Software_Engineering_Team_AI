@@ -11,6 +11,7 @@ from api.routes.files import router as files_router
 from api.routes.orchestrator import router as orchestrator_router
 from api.routes import agents
 from api.routes import reviewer
+from api.routes import planner
 
 app = FastAPI()
 
@@ -35,6 +36,11 @@ app.include_router(
     reviewer.router,
     prefix="/api",
     tags=["Reviewer"],
+)
+app.include_router(
+    planner.router,
+    prefix="/api",
+    tags=["Planner & Generators"],
 )
 
 @app.get("/")

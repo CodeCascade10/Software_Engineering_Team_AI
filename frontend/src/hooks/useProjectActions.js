@@ -19,10 +19,11 @@ export default function useProjectActions({
 
   // CREATE PROJECT
   const handleCreateProject =
-    async (prompt) => {
+    async (prompt, stack) => {
 
       return await createLocalProject(
         prompt,
+        stack,
 
         projects,
         setProjects,

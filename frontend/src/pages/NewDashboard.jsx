@@ -76,8 +76,10 @@ export default function NewDashboard() {
     setIsGenerating,
 
     logs,
+    setLogs,
 
     handleStartWorkflow,
+    handleCreateProject,
 
     // telemetry
     telemetryStats,
@@ -97,10 +99,13 @@ export default function NewDashboard() {
 
     // sandbox
     projectFiles,
+    setProjectFiles,
 
     openedProject,
+    setOpenedProject,
 
     activeFileTab,
+    setActiveFileTab,
 
     editingFileContent,
     setEditingFileContent,
@@ -164,13 +169,9 @@ export default function NewDashboard() {
           "Initializing autonomous AI engineering team..."
         );
 
+        const project = await handleCreateProject(promptInput, stack);
         await handleStartWorkflow();
-
-        if (workflowMode === "Reviewer Only") {
-          setActiveTab("reviewer");
-        } else {
-          setActiveTab("planner");
-        }
+        await handleFetchFiles(project._id);
 
       } catch (err) {
 
@@ -236,11 +237,17 @@ export default function NewDashboard() {
             )
           }
           pushToast={pushToast}
+          onLogoClick={() => {
+            setOpenedProject(null);
+            setProjectFiles({});
+            setPromptInput("");
+            setLogs([]);
+          }}
         />
       }
 
       hero={
-        activeTab === "planner" && (!openedProject || isGenerating) ? (
+        !openedProject || isGenerating ? (
           <div className="space-y-8">
             <PromptOrchestrator
               promptInput={promptInput}
@@ -255,45 +262,48 @@ export default function NewDashboard() {
               isGenerating={isGenerating}
             />
 
-            <WorkflowConsole
-              logs={logs}
-              isGenerating={isGenerating}
-            />
+            {isGenerating && (
+              <WorkflowConsole
+                logs={logs}
+                isGenerating={isGenerating}
+              />
+            )}
           </div>
         ) : null
       }
 
-      sidebar={
-        <DashboardSidebar
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-        />
-      }
+      sidebar={null}
 
       content={
-        <DashboardContent
-          activeTab={activeTab}
-          sandboxProps={{
-            projectFiles,
-            openedProject,
-            activeFileTab,
-            handleSelectFile,
-            editingFileContent,
-            setEditingFileContent,
-            handleSaveFileContent,
-            handleRunScript,
-            isEditingFile,
-            setIsEditingFile,
-            isRunningFileScript,
-            activeFileTerminalOutput,
-            onResetWorkspace: () => {
-              setOpenedProject(null);
-              setProjectFiles({});
-              setPromptInput("");
-              setLogs([]);
-            },
-          }}
-        />
+        openedProject && !isGenerating ? (
+          <DashboardContent
+            activeTab={activeTab}
+            sandboxProps={{
+              projectFiles,
+              setProjectFiles,
+              openedProject,
+              setOpenedProject,
+              activeFileTab,
+              setActiveFileTab,
+              handleSelectFile,
+              editingFileContent,
+              setEditingFileContent,
+              handleSaveFileContent,
+              handleRunScript,
+              isEditingFile,
+              setIsEditingFile,
+              isRunningFileScript,
+              activeFileTerminalOutput,
+              pushToast,
+              onResetWorkspace: () => {
+                setOpenedProject(null);
+                setProjectFiles({});
+                setPromptInput("");
+                setLogs([]);
+              },
+            }}
+          />
+        ) : null
       }
 
       commandPalette={

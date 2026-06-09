@@ -37,14 +37,13 @@ export default function FrontendWorkspacePanel({
   // Sync browser online state with whether sandbox is actively running / finished running
   useEffect(() => {
     if (isRunningFileScript) {
+      setBrowserOnline(false);
+      setApiResponse("");
       // Simulate loading phase, then set online
       const timer = setTimeout(() => {
         setBrowserOnline(true);
       }, 3500); // Syncs with Sandbox log simulation
       return () => clearTimeout(timer);
-    } else {
-      setBrowserOnline(false);
-      setApiResponse("");
     }
   }, [isRunningFileScript]);
 

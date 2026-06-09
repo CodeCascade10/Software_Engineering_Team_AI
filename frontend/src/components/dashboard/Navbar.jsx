@@ -6,13 +6,17 @@ export default function Navbar({
   setIsCommandPaletteOpen,
   logout,
   pushToast,
+  onLogoClick,
 }) {
   return (
     <nav className="sticky top-0 z-40 w-full bg-[#080a0f]/80 backdrop-blur-xl border-b border-white/[0.04] px-6 lg:px-12 h-16 flex items-center justify-between">
       <div className="flex items-center gap-8">
         
         {/* Logo */}
-        <div className="flex items-center gap-2.5">
+        <button
+          onClick={onLogoClick}
+          className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity focus:outline-none bg-transparent border-none p-0"
+        >
           <div className="w-6 h-6 rounded-lg bg-brand-goldDim border border-brand-gold/30 flex items-center justify-center relative">
             <span className="w-1.5 h-1.5 rounded-full bg-brand-gold animate-ping absolute" />
             <span className="w-1.5 h-1.5 rounded-full bg-brand-gold relative z-10" />
@@ -21,7 +25,7 @@ export default function Navbar({
           <span className="font-mono text-sm tracking-[0.2em] font-extrabold text-white">
             CODENEXUS <span className="text-brand-gold">AI</span>
           </span>
-        </div>
+        </button>
 
         {/* Nav tabs removed for clean streamlined header */}
       </div>

@@ -72,12 +72,12 @@ export async function simulateWorkflow({
     const activeSteps =
       workflowMode === "Planner Only"
         ? [steps[0]]
+        : workflowMode === "Frontend Only"
+        ? [steps[2]]
+        : workflowMode === "Backend Only"
+        ? [steps[1]]
         : workflowMode === "Reviewer Only"
         ? [steps[3]]
-        : workflowMode === "Debugger Only"
-        ? [steps[4]]
-        : workflowMode === "Deploy Only"
-        ? [steps[5]]
         : steps;
 
     for (const step of activeSteps) {

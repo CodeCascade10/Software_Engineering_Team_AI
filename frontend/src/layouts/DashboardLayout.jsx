@@ -22,15 +22,17 @@ export default function DashboardLayout({
         {hero}
 
         {/* BODY */}
-        <div className="grid grid-cols-1 xl:grid-cols-[340px_1fr] gap-8">
+        <div className={sidebar ? "grid grid-cols-1 xl:grid-cols-[340px_1fr] gap-8" : "w-full"}>
 
           {/* LEFT */}
-          <aside className="space-y-6">
-            {sidebar}
-          </aside>
+          {sidebar && (
+            <aside className="space-y-6">
+              {sidebar}
+            </aside>
+          )}
 
           {/* RIGHT */}
-          <section className="space-y-6 min-w-0">
+          <section className="space-y-6 min-w-0 flex-1">
             {content}
           </section>
         </div>
