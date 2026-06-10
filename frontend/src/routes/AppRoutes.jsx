@@ -11,6 +11,7 @@ import Signup from "../pages/Signup";
 import NewDashboard from "../pages/NewDashboard";
 
 import ProtectedRoute from "../components/ProtectedRoute";
+import OAuthSuccess from "../pages/OAuthSuccess";
 
 export default function AppRoutes() {
 
@@ -53,6 +54,12 @@ export default function AppRoutes() {
           <Navigate to="/login" />
         }
       />
+
+      {/* GITHUB */}
+      <Route
+       path="/oauth-success"
+       element={<OAuthSuccess />}
+       />
     </Routes>
   );
 }

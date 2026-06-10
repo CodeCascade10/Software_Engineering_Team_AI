@@ -12,6 +12,9 @@ from api.routes.orchestrator import router as orchestrator_router
 from api.routes import agents
 from api.routes import reviewer
 from api.routes import planner
+from api.routes.github_auth import (
+    router as github_auth_router
+)
 
 app = FastAPI()
 
@@ -41,6 +44,9 @@ app.include_router(
     planner.router,
     prefix="/api",
     tags=["Planner & Generators"],
+)
+app.include_router(
+    github_auth_router
 )
 
 @app.get("/")
