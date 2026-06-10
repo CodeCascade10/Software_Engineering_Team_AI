@@ -7,6 +7,10 @@ import { FcGoogle } from "react-icons/fc";
 import API from "../api/axios";
 import { useAuth } from "../contexts/AuthContext";
 
+import { GoogleLogin } from "@react-oauth/google";
+import { googleLogin } from "../services/googleAuthService";
+
+
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -356,21 +360,62 @@ export default function Login() {
             </div>
 
             {/* Social logins - FULLY INTERACTIVE SIMULATIONS */}
-            <div className="grid grid-cols-2 gap-3">
-              <button 
-                onClick={() => handleSocialLogin("GitHub")}
-                className="flex items-center justify-center gap-2 bg-white/[0.01] hover:bg-white/[0.04] border border-white/[0.05] hover:border-white/[0.1] text-brand-text text-xs py-3 rounded-2xl transition-all duration-200"
+            <div className="grid grid-cols-1 gap-3">
+
+              <button
+               onClick={() => handleSocialLogin("GitHub")}
+               className="flex items-center justify-center gap-2 bg-white/[0.01] hover:bg-white/[0.04] border border-white/[0.05] hover:border-white/[0.1] text-brand-text text-xs py-3 rounded-2xl transition-all duration-200"
               >
                 <FiGithub className="text-base" />
                 <span>GitHub</span>
-              </button>
-              <button 
-                onClick={() => handleSocialLogin("Google")}
-                className="flex items-center justify-center gap-2 bg-white/[0.01] hover:bg-white/[0.04] border border-white/[0.05] hover:border-white/[0.1] text-brand-text text-xs py-3 rounded-2xl transition-all duration-200"
-              >
-                <FcGoogle className="text-base" />
-                <span>Google</span>
-              </button>
+                 </button>
+
+              <div className="flex justify-center">
+
+                <GoogleLogin
+                  onSuccess={async (credentialResponse) => {
+
+                    try {
+
+                      const data =
+                        await googleLogin(
+                          credentialResponse.credential
+                        );
+
+                      localStorage.setItem(
+                        "token",
+                        data.access_token
+                      );
+
+                      login(
+                        data.access_token
+                      );
+
+                      navigate(
+                        "/dashboard"
+                      );
+
+                    } catch (error) {
+
+                      console.error(error);
+
+                      setErrorMsg(
+                        "Google Login Failed"
+                      );
+                    }
+                  }}
+
+                  onError={() => {
+
+                    setErrorMsg(
+                      "Google Login Failed"
+                    );
+                  }}
+
+                />
+           
+           </div>
+
             </div>
 
             {/* Redirect to signup */}
