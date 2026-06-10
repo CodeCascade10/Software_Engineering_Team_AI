@@ -1,14 +1,9 @@
 import httpx
 
 from fastapi import APIRouter
-
 from fastapi.responses import RedirectResponse
 
 from config.settings import settings
-
-from database.mongodb import db
-
-from auth.jwt_handler import create_access_token
 
 router = APIRouter(
     prefix="/auth",
@@ -24,9 +19,7 @@ async def github_login():
         f"?client_id={settings.GITHUB_CLIENT_ID}"
     )
 
-    return RedirectResponse(
-        github_url
-    )
+    return RedirectResponse(github_url)
 
 
 @router.get("/github/callback")
@@ -50,99 +43,50 @@ async def github_callback(code: str):
             },
         )
 
-        access_token = (
-            token_response.json()
-            .get("access_token")
+        token_data = token_response.json()
+
+        access_token = token_data.get(
+            "access_token"
         )
+
+        if not access_token:
+
+            return {
+                "error":
+                "No access token received",
+
+                "token_response":
+                token_data
+            }
 
         user_response = await client.get(
             "https://api.github.com/user",
             headers={
                 "Authorization":
-                f"Bearer {access_token}"
+                f"token {access_token}",
+                "Accept":
+                "application/vnd.github+json"
             },
         )
 
-        github_user = user_response.json()
+        github_user = (
+            user_response.json()
+        )
+
+        if "login" not in github_user:
+
+            return {
+                "error":
+                "GitHub user fetch failed",
+
+                "token_response":
+                token_data,
+
+                "github_user":
+                github_user
+            }
 
         return {
-            "token_response": token_response.json(),
+            "success": True,
             "github_user": github_user
-}
-
-    #     print("TOKEN RESPONSE:", token_response.json())
-    #     print("GITHUB USER:", github_user)    
-
-    # email = github_user.get("email")
-
-    # github_login = github_user.get(
-    #     "login",
-    #     "unknown_user"
-    # )
-
-    # if not email:
-
-    #     email = (
-    #         f"{github_user['login']}"
-    #         "@github.local"
-    #     )
-
-    # user = await db.users.find_one(
-    #     {
-    #         "email": email
-    #     }
-    # )
-
-    # if not user:
-
-    #     user_data = {
-
-    #         "name":
-    #         github_user["login"],
-
-    #         "email":
-    #         email,
-
-    #         "provider":
-    #         "github",
-
-    #         "github_id":
-    #         github_user["id"]
-    #     }
-
-    #     result = (
-    #         await db.users.insert_one(
-    #             user_data
-    #         )
-    #     )
-
-    #     user_id = str(
-    #         result.inserted_id
-    #     )
-
-    # else:
-
-    #     user_id = str(
-    #         user["_id"]
-    #     )
-
-    # jwt_token = (
-    #     create_access_token(
-    #         {
-    #             "user_id":
-    #             user_id,
-
-    #             "email":
-    #             email
-    #         }
-    #     )
-    # )
-
-    # frontend_url = (
-    #     "https://software-engineering-team-ai.vercel.app"
-    #     f"/oauth-success?token={jwt_token}"
-    # )
-
-    # return RedirectResponse(
-    #     frontend_url
-    # )
+        }
