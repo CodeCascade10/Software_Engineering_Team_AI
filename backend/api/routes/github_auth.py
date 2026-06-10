@@ -65,7 +65,15 @@ async def github_callback(code: str):
 
         github_user = user_response.json()
 
+        print("TOKEN RESPONSE:", token_response.json())
+        print("GITHUB USER:", github_user)    
+
     email = github_user.get("email")
+
+    github_login = github_user.get(
+        "login",
+        "unknown_user"
+    )
 
     if not email:
 
