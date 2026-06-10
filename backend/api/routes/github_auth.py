@@ -5,6 +5,7 @@ from fastapi.responses import RedirectResponse
 
 from config.settings import settings
 
+
 router = APIRouter(
     prefix="/auth",
     tags=["GitHub Auth"]
@@ -17,6 +18,7 @@ async def github_login():
     github_url = (
         "https://github.com/login/oauth/authorize"
         f"?client_id={settings.GITHUB_CLIENT_ID}"
+        "&scope=read:user user:email"
     )
 
     return RedirectResponse(github_url)
@@ -63,9 +65,13 @@ async def github_callback(code: str):
             "https://api.github.com/user",
             headers={
                 "Authorization":
-                f"token {access_token}",
+                f"Bearer {access_token}",
+
                 "Accept":
-                "application/vnd.github+json"
+                "application/vnd.github+json",
+
+                "X-GitHub-Api-Version":
+                "2022-11-28"
             },
         )
 
@@ -79,6 +85,9 @@ async def github_callback(code: str):
                 "error":
                 "GitHub user fetch failed",
 
+                "status_code":
+                user_response.status_code,
+
                 "token_response":
                 token_data,
 
@@ -88,5 +97,7 @@ async def github_callback(code: str):
 
         return {
             "success": True,
-            "github_user": github_user
+
+            "github_user":
+            github_user
         }
