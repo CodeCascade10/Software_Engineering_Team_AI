@@ -65,79 +65,84 @@ async def github_callback(code: str):
 
         github_user = user_response.json()
 
-        print("TOKEN RESPONSE:", token_response.json())
-        print("GITHUB USER:", github_user)    
+        return {
+            "token_response": token_response.json(),
+            "github_user": github_user
+}
 
-    email = github_user.get("email")
+    #     print("TOKEN RESPONSE:", token_response.json())
+    #     print("GITHUB USER:", github_user)    
 
-    github_login = github_user.get(
-        "login",
-        "unknown_user"
-    )
+    # email = github_user.get("email")
 
-    if not email:
+    # github_login = github_user.get(
+    #     "login",
+    #     "unknown_user"
+    # )
 
-        email = (
-            f"{github_user['login']}"
-            "@github.local"
-        )
+    # if not email:
 
-    user = await db.users.find_one(
-        {
-            "email": email
-        }
-    )
+    #     email = (
+    #         f"{github_user['login']}"
+    #         "@github.local"
+    #     )
 
-    if not user:
+    # user = await db.users.find_one(
+    #     {
+    #         "email": email
+    #     }
+    # )
 
-        user_data = {
+    # if not user:
 
-            "name":
-            github_user["login"],
+    #     user_data = {
 
-            "email":
-            email,
+    #         "name":
+    #         github_user["login"],
 
-            "provider":
-            "github",
+    #         "email":
+    #         email,
 
-            "github_id":
-            github_user["id"]
-        }
+    #         "provider":
+    #         "github",
 
-        result = (
-            await db.users.insert_one(
-                user_data
-            )
-        )
+    #         "github_id":
+    #         github_user["id"]
+    #     }
 
-        user_id = str(
-            result.inserted_id
-        )
+    #     result = (
+    #         await db.users.insert_one(
+    #             user_data
+    #         )
+    #     )
 
-    else:
+    #     user_id = str(
+    #         result.inserted_id
+    #     )
 
-        user_id = str(
-            user["_id"]
-        )
+    # else:
 
-    jwt_token = (
-        create_access_token(
-            {
-                "user_id":
-                user_id,
+    #     user_id = str(
+    #         user["_id"]
+    #     )
 
-                "email":
-                email
-            }
-        )
-    )
+    # jwt_token = (
+    #     create_access_token(
+    #         {
+    #             "user_id":
+    #             user_id,
 
-    frontend_url = (
-        "https://software-engineering-team-ai.vercel.app"
-        f"/oauth-success?token={jwt_token}"
-    )
+    #             "email":
+    #             email
+    #         }
+    #     )
+    # )
 
-    return RedirectResponse(
-        frontend_url
-    )
+    # frontend_url = (
+    #     "https://software-engineering-team-ai.vercel.app"
+    #     f"/oauth-success?token={jwt_token}"
+    # )
+
+    # return RedirectResponse(
+    #     frontend_url
+    # )
