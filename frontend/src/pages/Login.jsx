@@ -479,50 +479,7 @@ export default function Login() {
       </AnimatePresence>
 
       {/* ── HIGH TECH OAUTH HANDSHAKE OVERLAY ── */}
-      <AnimatePresence>
-        {isOAuthOpen && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-[#080a0f]/90 backdrop-blur-md flex items-center justify-center z-50 p-4"
-          >
-            <motion.div 
-              initial={{ scale: 0.95 }}
-              animate={{ scale: 1 }}
-              exit={{ scale: 0.95 }}
-              className="w-full max-w-md bg-black border border-brand-blue/30 rounded-3xl p-6 shadow-[0_0_50px_rgba(74,158,255,0.12)] space-y-6 font-mono"
-            >
-              <div className="flex items-center justify-between border-b border-white/[0.08] pb-3">
-                <span className="text-xs uppercase font-mono font-bold text-brand-blue tracking-widest flex items-center gap-2">
-                  <FiTerminal /> federated_oauth.sh
-                </span>
-                <span className="text-[10px] text-brand-muted uppercase">Secure Connection</span>
-              </div>
-
-              <div className="space-y-4 text-center py-4">
-                <div className="w-12 h-12 rounded-2xl bg-brand-blueDim border border-brand-blue/30 flex items-center justify-center mx-auto relative">
-                  <span className="w-2 h-2 rounded-full bg-brand-blue animate-ping absolute" />
-                  <FiCpu className="text-brand-blue text-xl relative z-10" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">Federation handshake in progress</h3>
-                  <p className="text-[10px] text-brand-muted mt-1">Connecting credentials verification nodes via secure JWT</p>
-                </div>
-              </div>
-
-              {/* Handshake terminal feed */}
-              <div className="bg-black/80 border border-brand-blue/20 rounded-xl p-4 font-mono text-[10px] text-brand-blue whitespace-pre-wrap leading-relaxed max-h-[140px] overflow-y-auto">
-                {oauthLogs}
-              </div>
-
-              <div className="text-center pt-2 text-[9px] text-brand-muted">
-                Handshake Authorized &bull; Multi-Pass Cert verified
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+     
 
     </div>
   );

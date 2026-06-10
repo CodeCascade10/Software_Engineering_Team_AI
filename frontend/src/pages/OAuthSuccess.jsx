@@ -1,20 +1,15 @@
 import { useEffect } from "react";
-
 import { useNavigate } from "react-router-dom";
-
-import OAuthSuccess from "../pages/OAuthSuccess";
 
 export default function OAuthSuccess() {
 
-  const navigate =
-    useNavigate();
+  const navigate = useNavigate();
 
   useEffect(() => {
 
-    const token =
-      new URLSearchParams(
-        window.location.search
-      ).get("token");
+    const token = new URLSearchParams(
+      window.location.search
+    ).get("token");
 
     if (token) {
 
@@ -23,9 +18,7 @@ export default function OAuthSuccess() {
         token
       );
 
-      navigate(
-        "/dashboard"
-      );
+      navigate("/dashboard");
     }
 
   }, [navigate]);
