@@ -29,9 +29,9 @@ export default function Login() {
   const [isForgotChecking, setIsForgotChecking] = useState(false);
   const [forgotTerminalLogs, setForgotTerminalLogs] = useState("");
 
-  const [isOAuthOpen, setIsOAuthOpen] = useState(false);
-  const [oauthProvider, setOauthProvider] = useState("");
-  const [oauthLogs, setOauthLogs] = useState("");
+  // const [isOAuthOpen, setIsOAuthOpen] = useState(false);
+  // const [oauthProvider, setOauthProvider] = useState("");
+  // const [oauthLogs, setOauthLogs] = useState("");
 
   const handleChange = (e) => {
     setFormData({
@@ -87,26 +87,7 @@ export default function Login() {
     }, 1500);
   };
 
-  // Trigger simulated GitHub / Google OAuth Federated Handshake
-  const handleSocialLogin = (provider) => {
-    setOauthProvider(provider);
-    setIsOAuthOpen(true);
-    setOauthLogs(`$> Connecting to secure ${provider} Auth Federation Gateway...\n$> Initializing secure handshake protocol...`);
-
-    setTimeout(() => {
-      setOauthLogs(prev => prev + `\n$> validating gateway certificates: SECURE\n$> requesting JWT federated credentials...\n$> developer identity verified: Architect (dev_0x98f)`);
-      
-      setTimeout(() => {
-        setOauthLogs(prev => prev + `\n[SUCCESS] Multi-pass federated credentials verification complete.\nRedirecting developer to Grid Console...`);
-        
-        setTimeout(() => {
-          setIsOAuthOpen(false);
-          login(`mock_oauth_jwt_nexus_token_${provider}_` + Date.now().toString(16));
-          navigate("/dashboard");
-        }, 1200);
-      }, 1500);
-    }, 1500);
-  };
+ 
 
   // Framer motion variants
   const fadeInUp = {
@@ -363,11 +344,14 @@ export default function Login() {
             <div className="grid grid-cols-1 gap-3">
 
               <button
-               onClick={() => handleSocialLogin("GitHub")}
+               onClick={()=>{
+                window.location.href=
+                  "https://software-engineering-team-ai.onrender.com/auth/github";
+               }}
                className="flex items-center justify-center gap-2 bg-white/[0.01] hover:bg-white/[0.04] border border-white/[0.05] hover:border-white/[0.1] text-brand-text text-xs py-3 rounded-2xl transition-all duration-200"
-              >
+>
                 <FiGithub className="text-base" />
-                <span>GitHub</span>
+                <span>Continue with GitHub</span>
                  </button>
 
               <div className="flex justify-center">

@@ -5,17 +5,16 @@ import {
 } from "react-router-dom";
 
 import Login from "../pages/Login";
-
 import Signup from "../pages/Signup";
-
 import NewDashboard from "../pages/NewDashboard";
+import OAuthSuccess from "../pages/OAuthSuccess";
 
 import ProtectedRoute from "../components/ProtectedRoute";
-import OAuthSuccess from "../pages/OAuthSuccess";
 
 export default function AppRoutes() {
 
   return (
+
     <Routes>
 
       {/* ROOT */}
@@ -37,6 +36,12 @@ export default function AppRoutes() {
         element={<Signup />}
       />
 
+      {/* GITHUB OAUTH */}
+      <Route
+        path="/oauth-success"
+        element={<OAuthSuccess />}
+      />
+
       {/* DASHBOARD */}
       <Route
         path="/dashboard"
@@ -55,11 +60,6 @@ export default function AppRoutes() {
         }
       />
 
-      {/* GITHUB */}
-      <Route
-       path="/oauth-success"
-       element={<OAuthSuccess />}
-       />
     </Routes>
   );
 }

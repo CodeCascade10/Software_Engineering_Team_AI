@@ -3,6 +3,9 @@ import httpx
 from fastapi import APIRouter
 from fastapi.responses import RedirectResponse
 
+from database.mongodb import db
+from auth.jwt_handler import create_access_token
+
 from config.settings import settings
 
 
@@ -75,9 +78,7 @@ async def github_callback(code: str):
             },
         )
 
-        github_user = (
-            user_response.json()
-        )
+        github_user = user_response.json()
 
         if "login" not in github_user:
 
@@ -85,19 +86,69 @@ async def github_callback(code: str):
                 "error":
                 "GitHub user fetch failed",
 
-                "status_code":
-                user_response.status_code,
-
-                "token_response":
-                token_data,
-
                 "github_user":
                 github_user
             }
 
-        return {
-            "success": True,
+    email = github_user.get("email")
 
-            "github_user":
-            github_user
+    if not email:
+
+        email = (
+            f"{github_user['login']}"
+            "@github.local"
+        )
+
+    user = await db.users.find_one(
+        {
+            "email": email
         }
+    )
+
+    if not user:
+
+        user_data = {
+
+            "name":
+            github_user.get(
+                "name",
+                github_user["login"]
+            ),
+
+            "email":
+            email,
+
+            "provider":
+            "github",
+
+            "github_id":
+            github_user["id"]
+        }
+
+        result = await db.users.insert_one(
+            user_data
+        )
+
+        user_id = str(
+            result.inserted_id
+        )
+
+    else:
+
+        user_id = str(
+            user["_id"]
+        )
+
+    token = create_access_token(
+        {
+            "user_id":
+            user_id,
+
+            "email":
+            email
+        }
+    )
+
+    return RedirectResponse(
+        f"https://software-engineering-team-ai.vercel.app/oauth-success?token={token}"
+    )

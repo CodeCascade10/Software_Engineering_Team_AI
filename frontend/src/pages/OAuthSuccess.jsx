@@ -2,6 +2,8 @@ import { useEffect } from "react";
 
 import { useNavigate } from "react-router-dom";
 
+import OAuthSuccess from "../pages/OAuthSuccess";
+
 export default function OAuthSuccess() {
 
   const navigate =
