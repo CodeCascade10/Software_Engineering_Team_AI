@@ -4,7 +4,7 @@ Here's a professional README you can directly use for your GitHub repository:
 
 > A Multi-Agent AI Platform that simulates a complete software engineering team capable of planning, generating, reviewing, debugging, and orchestrating software development workflows.
 
-![Platform Banner](https://via.placeholder.com/1200x400?text=AI+Software+Engineering+Team)
+
 
 ## 📖 Overview
 
