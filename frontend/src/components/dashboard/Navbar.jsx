@@ -1,21 +1,30 @@
 import { FiLogOut } from "react-icons/fi";
 
 export default function Navbar({
-  activeTab,
-  setActiveTab,
   setIsCommandPaletteOpen,
   logout,
-  pushToast,
   onLogoClick,
+  onProfileOpen,
+  userName,
 }) {
+
+  const initials = userName
+    ? userName
+        .split(" ")
+        .map((word) => word[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase()
+    : "US";
+
   return (
     <nav className="sticky top-0 z-40 w-full bg-[#080a0f]/80 backdrop-blur-xl border-b border-white/[0.04] px-6 lg:px-12 h-16 flex items-center justify-between">
+
       <div className="flex items-center gap-8">
-        
-        {/* Logo */}
+
         <button
           onClick={onLogoClick}
-          className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity focus:outline-none bg-transparent border-none p-0"
+          className="flex items-center gap-2.5 cursor-pointer hover:opacity-80 transition-opacity bg-transparent border-none p-0"
         >
           <div className="w-6 h-6 rounded-lg bg-brand-goldDim border border-brand-gold/30 flex items-center justify-center relative">
             <span className="w-1.5 h-1.5 rounded-full bg-brand-gold animate-ping absolute" />
@@ -27,13 +36,10 @@ export default function Navbar({
           </span>
         </button>
 
-        {/* Nav tabs removed for clean streamlined header */}
       </div>
 
-      {/* Right Side */}
       <div className="flex items-center gap-4">
-        
-        {/* Command Palette */}
+
         <button
           onClick={() => setIsCommandPaletteOpen(true)}
           className="hidden sm:flex items-center gap-3 bg-black/40 border border-white/[0.06] hover:border-white/[0.12] rounded-xl px-4 py-2 text-xs font-mono text-brand-muted transition-all duration-200"
@@ -45,21 +51,15 @@ export default function Navbar({
           </span>
         </button>
 
-        {/* Profile */}
         <div className="flex items-center gap-2 border-l border-white/[0.05] pl-4">
-          
-          <div
-            onClick={() => {
-              pushToast(
-                "Secure credentials profile role: Senior Architect",
-                "success"
-              );
-            }}
+
+          <button
+            onClick={onProfileOpen}
             className="w-8 h-8 rounded-lg bg-brand-blueDim border border-brand-blue/30 flex items-center justify-center text-xs font-bold text-brand-blue font-mono cursor-pointer hover:bg-brand-blueDim/20"
-            title="System Profile Information"
+            title={userName || "Profile"}
           >
-            SE
-          </div>
+            {initials}
+          </button>
 
           <button
             onClick={logout}
@@ -68,8 +68,11 @@ export default function Navbar({
           >
             <FiLogOut />
           </button>
+
         </div>
+
       </div>
+
     </nav>
   );
 }

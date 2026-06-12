@@ -1,147 +1,123 @@
+import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 import {
-  FiActivity,
   FiCpu,
   FiLayers,
   FiSearch,
   FiPlay,
-  FiCloud,
   FiGrid,
 } from "react-icons/fi";
 
-const AGENT_META = {
-  Planner: {
-    icon: <FiGrid className="text-amber-400 text-lg" />,
-    tag: "Architecture",
-    task: "Designing microservices blueprint",
-    desc: "Drafts structural specs and schemas",
-  },
+export default function AgentGrid({ handleAgentMatrixClick }) {
+  const [activeAction, setActiveAction] = useState("Strategy");
 
-  "Backend Dev": {
-    icon: <FiCpu className="text-brand-blue text-lg" />,
-    tag: "REST Engineering",
-    task: "Generating FastAPI controllers",
-    desc: "Builds routers, services and logic",
-  },
+  const actions = [
+    {
+      name: "Strategy",
+      icon: <FiGrid />,
+      activeClass: "bg-amber-500/10 border-amber-500/40 text-amber-400 shadow-[0_0_20px_rgba(245,166,35,0.15)]",
+      inactiveClass: "border-white/[0.05] bg-black/20 text-brand-muted hover:border-amber-500/20 hover:text-amber-400",
+      desc: "Initialize planning",
+      markdown: `### Strategy Phase (AI Planner)
+The **AI Planner** designs the high-level architecture blueprint and system schemas.
+- **Architectural Design**: Establish routes, components, and data structures.
+- **Output Artifact**: Generates \`architecture.md\` development roadmap.
+- **Technology Stack**: Fully aware of *FastAPI* or *MERN* stack definitions.`
+    },
+    {
+      name: "Development",
+      icon: <FiCpu />,
+      activeClass: "bg-blue-500/10 border-blue-500/40 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.15)]",
+      inactiveClass: "border-white/[0.05] bg-black/20 text-brand-muted hover:border-blue-500/20 hover:text-blue-400",
+      desc: "Trigger generation",
+      markdown: `### Development Phase (Dev Agents)
+**AI Developers** write the clean, production-ready codebase based on the system blueprint.
+- **Backend Service**: Generates controllers, database schemas, model mappings, and REST API routes.
+- **Frontend Panel**: Build layouts, glassmorphic UI components, navigation structures, and state hooks.
+- **Tech Stack Options**: Dynamically adjusted based on the selected configuration.`
+    },
+    {
+      name: "Audit",
+      icon: <FiSearch />,
+      activeClass: "bg-purple-500/10 border-purple-500/40 text-purple-400 shadow-[0_0_20px_rgba(168,85,247,0.15)]",
+      inactiveClass: "border-white/[0.05] bg-black/20 text-brand-muted hover:border-purple-500/20 hover:text-purple-400",
+      desc: "Security analysis",
+      markdown: `### Audit Phase (Reviewer Agent)
+The **AI Code Reviewer** runs automated diagnostics and security audits on the generated workspace.
+- **Code Integrity**: Checks for code errors, linting problems, and style discrepancies.
+- **Security Check**: Scans for authentication vulnerabilities, loose configuration keys, and DB pool limits.`
+    },
+    {
+      name: "Execute",
+      icon: <FiPlay />,
+      activeClass: "bg-green-500/10 border-green-500/40 text-green-400 shadow-[0_0_20px_rgba(34,197,94,0.15)]",
+      inactiveClass: "border-white/[0.05] bg-black/20 text-brand-muted hover:border-green-500/20 hover:text-green-400",
+      desc: "Sandbox deploy",
+      markdown: `### Execution Phase (Executor & DevOps)
+Runs the generated workspace in a fully isolated container runtime sandbox environment.
+- **Runtime Compilation**: Compiles client-side bundles and runs live service nodes.
+- **Deployment & Scaling**: Provision cluster resources, scale replicas, and inspect hot-reload logs.`
+    }
+  ];
 
-  "Frontend Dev": {
-    icon: <FiLayers className="text-brand-gold text-lg" />,
-    tag: "UI Components",
-    task: "Injecting tailwind design grids",
-    desc: "Assembles glassmorphic user panels",
-  },
+  const currentAction = actions.find(a => a.name === activeAction) || actions[0];
 
-  "Code Reviewer": {
-    icon: <FiSearch className="text-purple-400 text-lg" />,
-    tag: "QA Auditing",
-    task: "Verifying security access keys",
-    desc: "Ensures linting, coverage and safety",
-  },
-
-  Executor: {
-    icon: <FiPlay className="text-brand-green text-lg" />,
-    tag: "Sandbox Execution",
-    task: "Launching test container instances",
-    desc: "Compiles, runs, and monitors packages",
-  },
-
-  DevOps: {
-    icon: <FiCloud className="text-cyan-400 text-lg" />,
-    tag: "Scale & Orchestrate",
-    task: "Allocating proxy replica nodes",
-    desc: "Configures docker clusters and builds",
-  },
-};
-
-export default function AgentGrid({
-  handleAgentMatrixClick,
-}) {
   return (
-    <div className="space-y-4">
-
-      {/* HEADER */}
-      <div className="flex items-center gap-2">
-        <FiActivity className="text-brand-gold text-lg" />
-
-        <h2 className="text-xs font-mono font-bold tracking-widest uppercase text-brand-muted">
-          Autonomous Agent Matrix Nodes
-        </h2>
-      </div>
-
-      {/* GRID */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-
-        {Object.entries(AGENT_META).map(([name, meta]) => {
-
-          const progressMap = {
-            Planner: 92,
-            "Backend Dev": 84,
-            "Frontend Dev": 79,
-            "Code Reviewer": 85,
-            Executor: 100,
-            DevOps: 68,
-          };
-
-          const curProgress = progressMap[name];
-
+    <div className="space-y-6">
+      {/* ACTION BUTTONS */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        {actions.map((action) => {
+          const isActive = activeAction === action.name;
           return (
-            <div
-              key={name}
-              onClick={() => handleAgentMatrixClick(name)}
-              className="bg-[#0c0e14]/50 border border-white/[0.05] hover:border-brand-gold/30 hover:shadow-[0_0_20px_rgba(245,166,35,0.15)] rounded-3xl p-5 transition-all duration-300 cursor-pointer group relative overflow-hidden"
+            <button
+              key={action.name}
+              onClick={() => {
+                setActiveAction(action.name);
+                if (handleAgentMatrixClick) {
+                  handleAgentMatrixClick(action.name);
+                }
+              }}
+              className={`flex flex-col items-center justify-center p-6 border-2 rounded-3xl transition-all duration-300 group ${
+                isActive ? action.activeClass : action.inactiveClass
+              }`}
             >
-
-              {/* glow */}
-              <div className="absolute inset-0 bg-gradient-to-br from-brand-gold/[0.03] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-
-              {/* top */}
-              <div className="flex items-start justify-between relative z-10">
-                <div className="w-11 h-11 rounded-2xl bg-white/[0.03] border border-white/[0.04] flex items-center justify-center">
-                  {meta.icon}
-                </div>
-
-                <span className="text-[9px] uppercase tracking-widest font-mono text-brand-muted">
-                  {meta.tag}
-                </span>
-              </div>
-
-              {/* title */}
-              <div className="mt-5 relative z-10">
-                <h3 className="text-sm font-bold text-white tracking-tight">
-                  {name}
-                </h3>
-
-                <p className="text-[11px] text-brand-muted mt-1 leading-relaxed">
-                  {meta.desc}
-                </p>
-              </div>
-
-              {/* progress */}
-              <div className="mt-5 relative z-10">
-                <div className="flex items-center justify-between text-[10px] font-mono mb-1">
-                  <span className="text-brand-muted">
-                    ACTIVE LOAD
-                  </span>
-
-                  <span className="text-white">
-                    {curProgress}%
-                  </span>
-                </div>
-
-                <div className="w-full h-1.5 bg-white/[0.04] rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-gradient-to-r from-brand-gold to-amber-300 rounded-full"
-                    style={{ width: `${curProgress}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* task */}
-              <div className="mt-4 text-[10px] font-mono uppercase tracking-wide text-brand-muted relative z-10">
-                {meta.task}
-              </div>
-            </div>
+              <div className="text-xl mb-2">{action.icon}</div>
+              <span className="font-bold text-sm tracking-wide">{action.name}</span>
+              <span className="text-[9px] opacity-60 mt-1 uppercase font-mono">{action.desc}</span>
+            </button>
           );
         })}
+      </div>
+
+      {/* DESCRIPTION SECTION (MARKDOWN) */}
+      <div className="p-6 rounded-[24px] border border-white/[0.06] bg-[#0c0e14]/50 backdrop-blur-xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/[0.01] rounded-full filter blur-2xl pointer-events-none" />
+        <div className="prose prose-invert max-w-none text-brand-muted font-sans text-xs leading-relaxed space-y-2">
+          <ReactMarkdown
+            components={{
+              h3: ({ children }) => (
+                <h3 className="text-base font-bold text-white tracking-tight flex items-center gap-2 mb-3">
+                  <span className={`w-1.5 h-4 rounded ${
+                    activeAction === "Strategy" ? "bg-amber-400" :
+                    activeAction === "Development" ? "bg-blue-400" :
+                    activeAction === "Audit" ? "bg-purple-400" : "bg-green-400"
+                  }`} />
+                  {children}
+                </h3>
+              ),
+              p: ({ children }) => <p className="text-brand-muted text-sm leading-relaxed mb-3">{children}</p>,
+              ul: ({ children }) => <ul className="list-disc pl-5 space-y-1 text-sm text-brand-muted mb-3">{children}</ul>,
+              li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+              code: ({ children }) => (
+                <code className="px-1.5 py-0.5 rounded bg-white/[0.08] font-mono text-xs text-white">
+                  {children}
+                </code>
+              )
+            }}
+          >
+            {currentAction.markdown}
+          </ReactMarkdown>
+        </div>
       </div>
     </div>
   );

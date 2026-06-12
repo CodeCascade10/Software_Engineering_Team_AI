@@ -1,24 +1,18 @@
-import Navbar from "../components/dashboard/Navbar";
+import { useState } from "react";
 
-import HeroSection from "../components/dashboard/HeroSection";
+import Navbar from "../components/dashboard/Navbar";
+import ProfileDrawer from "../components/dashboard/ProfileDrawer";
 
 import PromptOrchestrator from "../components/dashboard/PromptOrchestrator";
-
 import ToastContainer from "../components/dashboard/ToastContainer";
-
 import CommandPalette from "../components/dashboard/CommandPalette";
-
-import DashboardSidebar from "../components/dashboard/DashboardSidebar";
-
 import DashboardContent from "../components/dashboard/DashboardContent";
-
 import DashboardLayout from "../layouts/DashboardLayout";
-
-import AgentGrid from "../components/dashboard/AgentGrid";
+import WorkflowConsole from "../components/dashboard/WorkflowConsole";
 
 import useDashboardBuilder from "../hooks/useDashboardBuilder";
+import AgentGrid from "../components/dashboard/AgentGrid";
 
-import WorkflowConsole from "../components/dashboard/WorkflowConsole";
 
 const ALL_COMMANDS = [
   {
@@ -26,25 +20,21 @@ const ALL_COMMANDS = [
     desc: "Initialize new autonomous workspace",
     shortcut: "⌘ + P",
   },
-
   {
     cmd: "Run Workflow",
     desc: "Launch multi-agent orchestration",
     shortcut: "⌘ + R",
   },
-
   {
     cmd: "Open Sandbox",
     desc: "Inspect runtime execution",
     shortcut: "⌘ + S",
   },
-
   {
     cmd: "Cluster Metrics",
     desc: "View infrastructure telemetry",
     shortcut: "⌘ + M",
   },
-
   {
     cmd: "Agent Diagnostics",
     desc: "Inspect AI runtime nodes",
@@ -53,9 +43,13 @@ const ALL_COMMANDS = [
 ];
 
 export default function NewDashboard() {
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+
+  const user = JSON.parse(
+    localStorage.getItem("user") || "{}"
+  );
 
   const {
-
     // workspace
     activeTab,
     setActiveTab,
@@ -142,204 +136,141 @@ export default function NewDashboard() {
     handleSaveFileContent,
 
     handleRunScript,
+  } = useDashboardBuilder(ALL_COMMANDS);
 
-  } = useDashboardBuilder(
-    ALL_COMMANDS
-  );
+  const handleGenerateProject = async () => {
+    if (!promptInput.trim()) {
+      pushToast("Please describe your software idea", "error");
+      return;
+    }
 
-  // GENERATE PROJECT
-  const handleGenerateProject =
-    async () => {
-
-      if (!promptInput.trim()) {
-
-        pushToast(
-          "Please describe your software idea",
-          "error"
-        );
-
-        return;
-      }
-
-      try {
-
-        setIsGenerating(true);
-
-        pushToast(
-          "Initializing autonomous AI engineering team..."
-        );
-
-        const project = await handleCreateProject(promptInput, stack);
-        await handleStartWorkflow();
-        await handleFetchFiles(project._id);
-
-      } catch (err) {
-
-        console.error(err);
-
-        pushToast(
-          "Failed to initialize workflow",
-          "error"
-        );
-
-      } finally {
-
-        setIsGenerating(false);
-      }
-    };
-
-  // FILE SELECT
-  const handleSelectFile = (
-    projectId,
-    fileName
-  ) => {
-
-    const file =
-      projectFiles[projectId]?.find(
-        (x) =>
-          x.file_name === fileName
-      );
-
-    if (!file) return;
-
-    setEditingFileContent(
-      file.content
-    );
+    try {
+      setIsGenerating(true);
+      pushToast("Initializing autonomous AI engineering team...");
+      const project = await handleCreateProject(promptInput, stack);
+      await handleStartWorkflow();
+      await handleFetchFiles(project._id);
+    } catch (err) {
+      console.error(err);
+      pushToast("Failed to initialize workflow", "error");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
-  // COMMAND EXECUTE
-  const handleExecuteCommand = (
-    cmd
-  ) => {
+  const handleSelectFile = (projectId, fileName) => {
+    const file = projectFiles[projectId]?.find((x) => x.file_name === fileName);
+    if (!file) return;
+    setEditingFileContent(file.content);
+  };
 
-    pushToast(
-      `Executed: ${cmd.cmd}`,
-      "success"
-    );
-
+  const handleExecuteCommand = (cmd) => {
+    pushToast(`Executed: ${cmd.cmd}`, "success");
     setIsCommandPaletteOpen(false);
   };
 
   return (
-
-    <DashboardLayout
-
-      navbar={
-        <Navbar
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          setIsCommandPaletteOpen={
-            setIsCommandPaletteOpen
-          }
-          logout={() =>
-            pushToast(
-              "Session terminated"
-            )
-          }
-          pushToast={pushToast}
-          onLogoClick={() => {
-            setOpenedProject(null);
-            setProjectFiles({});
-            setPromptInput("");
-            setLogs([]);
-          }}
-        />
-      }
-
-      hero={
-        !openedProject || isGenerating ? (
-          <div className="space-y-8">
-            <PromptOrchestrator
-              promptInput={promptInput}
-              setPromptInput={setPromptInput}
-              workflowMode={workflowMode}
-              setWorkflowMode={setWorkflowMode}
-              stack={stack}
-              setStack={setStack}
-              runtime={runtime}
-              setRuntime={setRuntime}
-              handleGenerateProject={handleGenerateProject}
-              isGenerating={isGenerating}
-            />
-
-            {isGenerating && (
-              <WorkflowConsole
-                logs={logs}
+    <>
+      <DashboardLayout
+        navbar={
+          <Navbar
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            setIsCommandPaletteOpen={setIsCommandPaletteOpen}
+            userName={user?.name}
+            logout={() => {
+              localStorage.removeItem("token");
+              localStorage.removeItem("user");
+              pushToast("Logged Out Successfully", "success");
+              setTimeout(() => { window.location.href = "/login"; }, 500);
+            }}
+            pushToast={pushToast}
+            onLogoClick={() => {
+              setOpenedProject(null);
+              setProjectFiles({});
+              setPromptInput("");
+              setLogs([]);
+            }}
+            onProfileOpen={() => setIsProfileOpen(true)}
+          />
+        }
+        hero={
+          !openedProject || isGenerating ? (
+            <div className="space-y-8">
+              <PromptOrchestrator
+                promptInput={promptInput}
+                setPromptInput={setPromptInput}
+                workflowMode={workflowMode}
+                setWorkflowMode={setWorkflowMode}
+                stack={stack}
+                setStack={setStack}
+                runtime={runtime}
+                setRuntime={setRuntime}
+                handleGenerateProject={handleGenerateProject}
                 isGenerating={isGenerating}
               />
-            )}
-          </div>
-        ) : null
-      }
-
-      sidebar={null}
-
-      content={
-        openedProject && !isGenerating ? (
-          <DashboardContent
-            activeTab={activeTab}
-            sandboxProps={{
-              projectFiles,
-              setProjectFiles,
-              openedProject,
-              setOpenedProject,
-              activeFileTab,
-              setActiveFileTab,
-              handleSelectFile,
-              editingFileContent,
-              setEditingFileContent,
-              handleSaveFileContent,
-              handleRunScript,
-              isEditingFile,
-              setIsEditingFile,
-              isRunningFileScript,
-              activeFileTerminalOutput,
-              pushToast,
-              onResetWorkspace: () => {
-                setOpenedProject(null);
-                setProjectFiles({});
-                setPromptInput("");
-                setLogs([]);
-              },
-            }}
+              {isGenerating && <WorkflowConsole logs={logs} isGenerating={isGenerating} />}
+              {!isGenerating && (
+                <AgentGrid handleAgentMatrixClick={handleAgentMatrixClick} />
+              )}
+            </div>
+          ) : null
+        }
+        sidebar={null}
+        content={
+          openedProject && !isGenerating ? (
+            <DashboardContent
+              activeTab={activeTab}
+              sandboxProps={{
+                projectFiles,
+                setProjectFiles,
+                openedProject,
+                setOpenedProject,
+                activeFileTab,
+                setActiveFileTab,
+                handleSelectFile,
+                editingFileContent,
+                setEditingFileContent,
+                handleSaveFileContent,
+                handleRunScript,
+                isEditingFile,
+                setIsEditingFile,
+                isRunningFileScript,
+                activeFileTerminalOutput,
+                pushToast,
+                onResetWorkspace: () => {
+                  setOpenedProject(null);
+                  setProjectFiles({});
+                  setPromptInput("");
+                  setLogs([]);
+                },
+              }}
+            />
+          ) : null
+        }
+        commandPalette={
+          <CommandPalette
+            isCommandPaletteOpen={isCommandPaletteOpen}
+            setIsCommandPaletteOpen={setIsCommandPaletteOpen}
+            commandPaletteQuery={commandPaletteQuery}
+            setCommandPaletteQuery={setCommandPaletteQuery}
+            filteredCommands={filteredCommands}
+            handleExecuteCommand={handleExecuteCommand}
           />
-        ) : null
-      }
+        }
+        toasts={<ToastContainer toasts={toasts} />}
+      />
 
-      commandPalette={
-        <CommandPalette
-
-          isCommandPaletteOpen={
-            isCommandPaletteOpen
-          }
-
-          setIsCommandPaletteOpen={
-            setIsCommandPaletteOpen
-          }
-
-          commandPaletteQuery={
-            commandPaletteQuery
-          }
-
-          setCommandPaletteQuery={
-            setCommandPaletteQuery
-          }
-
-          filteredCommands={
-            filteredCommands
-          }
-
-          handleExecuteCommand={
-            handleExecuteCommand
-          }
-        />
-      }
-
-      toasts={
-        <ToastContainer
-          toasts={toasts}
-        />
-      }
-    />
+      <ProfileDrawer
+        isOpen={isProfileOpen}
+        onClose={() => setIsProfileOpen(false)}
+        user={user}
+        onLogout={() => {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          window.location.href = "/login";
+        }}
+      />
+    </>
   );
 }
