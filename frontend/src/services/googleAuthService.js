@@ -1,11 +1,10 @@
 import API from "../api/axios";
 
-export const googleLogin = async (token) => {
+export const googleLogin = async (googleUser) => {
+
   const response = await API.post(
     "/auth/google",
-    {
-      token,
-    }
+    googleUser
   );
 
   return response.data;

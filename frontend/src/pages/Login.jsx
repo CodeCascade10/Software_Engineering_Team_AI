@@ -1,15 +1,14 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiMail, FiLock, FiArrowRight, FiGithub, FiCpu, FiTerminal, FiZap, FiActivity, FiSearch, FiInfo, FiCheckCircle } from "react-icons/fi";
+import { FiMail, FiLock, FiArrowRight, FiGithub, FiCpu, FiTerminal, FiZap, FiActivity, FiInfo } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 
 import API from "../api/axios";
 import { useAuth } from "../contexts/AuthContext";
 
-import { GoogleLogin } from "@react-oauth/google";
+import { useGoogleLogin } from "@react-oauth/google";
 import { googleLogin } from "../services/googleAuthService";
-
 
 export default function Login() {
   const navigate = useNavigate();
@@ -29,10 +28,35 @@ export default function Login() {
   const [isForgotChecking, setIsForgotChecking] = useState(false);
   const [forgotTerminalLogs, setForgotTerminalLogs] = useState("");
 
-  // const [isOAuthOpen, setIsOAuthOpen] = useState(false);
-  // const [oauthProvider, setOauthProvider] = useState("");
-  // const [oauthLogs, setOauthLogs] = useState("");
+  const handleGoogleLogin = useGoogleLogin({
 
+  onSuccess: async (tokenResponse) => {
+
+    const userResponse = await fetch(
+      "https://www.googleapis.com/oauth2/v3/userinfo",
+      {
+        headers: {
+          Authorization: `Bearer ${tokenResponse.access_token}`,
+        },
+      }
+    );
+
+    const googleUser = await userResponse.json();
+
+    const data = await googleLogin(
+      googleUser
+    );
+
+    localStorage.setItem(
+      "token",
+      data.access_token
+    );
+
+    login(data.access_token);
+
+    navigate("/dashboard");
+  },
+});
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -75,24 +99,34 @@ export default function Login() {
     e.preventDefault();
     if (!forgotEmail.trim()) return;
     setIsForgotChecking(true);
-    setForgotTerminalLogs(`$> Securing connection to credentials-inspector node...\n$> Initializing handshake with domain ${forgotEmail.split("@")[1] || "host"}...`);
+    setForgotTerminalLogs(
+      `$> Securing connection to credentials-inspector node...\n$> Initializing handshake with domain ${
+        forgotEmail.split("@")[1] || "host"
+      }...`
+    );
 
     setTimeout(() => {
-      setForgotTerminalLogs(prev => prev + `\n$> resolving MX target records: OK\n$> verifying domain security registry: VERIFIED\n$> generating encrypted recovery handshake code...`);
-      
+      setForgotTerminalLogs(
+        (prev) =>
+          prev +
+          `\n$> resolving MX target records: OK\n$> verifying domain security registry: VERIFIED\n$> generating encrypted recovery handshake code...`
+      );
+
       setTimeout(() => {
-        setForgotTerminalLogs(prev => prev + `\n[SUCCESS] Dispatching multi-pass recovery token to ${forgotEmail}.\nScan complete. Integrity verified.`);
+        setForgotTerminalLogs(
+          (prev) =>
+            prev +
+            `\n[SUCCESS] Dispatching multi-pass recovery token to ${forgotEmail}.\nScan complete. Integrity verified.`
+        );
         setIsForgotChecking(false);
       }, 1500);
     }, 1500);
   };
 
- 
-
   // Framer motion variants
   const fadeInUp = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
+    visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } },
   };
 
   const staggerContainer = {
@@ -101,8 +135,8 @@ export default function Login() {
       opacity: 1,
       transition: {
         staggerChildren: 0.08,
-      }
-    }
+      },
+    },
   };
 
   return (
@@ -118,7 +152,7 @@ export default function Login() {
       {/* LEFT SIDE: Cinematic Brand & Telemetry */}
       <div className="relative flex-1 flex flex-col justify-between p-8 md:p-16 lg:p-24 z-10 border-b md:border-b-0 md:border-r border-white/[0.04]">
         {/* Top brand header */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8 }}
@@ -143,13 +177,11 @@ export default function Login() {
             className="absolute -top-24 -left-24 w-80 h-80 border border-dashed border-brand-blue/[0.04] rounded-full pointer-events-none"
           />
 
-          <motion.div
-            variants={staggerContainer}
-            initial="hidden"
-            animate="visible"
-            className="space-y-6 max-w-xl"
-          >
-            <motion.div variants={fadeInUp} className="inline-flex items-center gap-2 bg-brand-goldDim border border-brand-gold/20 text-brand-gold font-mono text-xs font-semibold px-4 py-1.5 rounded-full uppercase tracking-wider">
+          <motion.div variants={staggerContainer} initial="hidden" animate="visible" className="space-y-6 max-w-xl">
+            <motion.div
+              variants={fadeInUp}
+              className="inline-flex items-center gap-2 bg-brand-goldDim border border-brand-gold/20 text-brand-gold font-mono text-xs font-semibold px-4 py-1.5 rounded-full uppercase tracking-wider"
+            >
               <span className="w-2 h-2 rounded-full bg-brand-gold animate-pulse shadow-[0_0_8px_#f5a623]" />
               System Status: Active
             </motion.div>
@@ -158,12 +190,14 @@ export default function Login() {
               AI SOFTWARE <br />
               <span className="bg-gradient-to-r from-brand-gold via-amber-300 to-brand-gold bg-[length:200%_auto] bg-clip-text text-transparent animate-[shimmer_5s_linear_infinite] gold-glow-text font-sans">
                 ENGINEERING
-              </span> <br />
+              </span>{" "}
+              <br />
               TEAM.
             </motion.h1>
 
             <motion.p variants={fadeInUp} className="text-brand-muted text-base lg:text-lg font-light leading-relaxed">
-              Experience the next generation of software production. A collaborative grid of autonomous AI agents designing, building, and deploying pipelines in seconds.
+              Experience the next generation of software production. A collaborative grid of autonomous AI agents
+              designing, building, and deploying pipelines in seconds.
             </motion.p>
 
             {/* Live Telemetry Mini Widgets */}
@@ -193,7 +227,7 @@ export default function Login() {
         </div>
 
         {/* Bottom Footer */}
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 0.5 }}
           transition={{ delay: 0.8, duration: 1 }}
@@ -241,7 +275,9 @@ export default function Login() {
             <form onSubmit={handleSubmit} className="space-y-5">
               {/* Email Input Group */}
               <div className="space-y-2">
-                <label className="block text-[11px] font-mono tracking-widest text-brand-muted uppercase font-bold">Email Address</label>
+                <label className="block text-[11px] font-mono tracking-widest text-brand-muted uppercase font-bold">
+                  Email Address
+                </label>
                 <div className="relative group">
                   <span className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-brand-muted group-focus-within:text-brand-gold transition-colors">
                     <FiMail />
@@ -261,9 +297,11 @@ export default function Login() {
               {/* Password Input Group */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-[11px] font-mono tracking-widest text-brand-muted uppercase font-bold">Password</label>
-                  <button 
-                    type="button" 
+                  <label className="text-[11px] font-mono tracking-widest text-brand-muted uppercase font-bold">
+                    Password
+                  </label>
+                  <button
+                    type="button"
                     onClick={() => {
                       setIsForgotOpen(true);
                       setForgotTerminalLogs("");
@@ -298,16 +336,22 @@ export default function Login() {
                     onChange={(e) => setRememberMe(e.target.checked)}
                     className="sr-only"
                   />
-                  <div className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${
-                    rememberMe ? 'bg-brand-gold border-brand-gold text-black' : 'border-white/[0.1] bg-black/40 group-hover:border-white/[0.2]'
-                  }`}>
+                  <div
+                    className={`w-5 h-5 rounded-lg border flex items-center justify-center transition-all ${
+                      rememberMe
+                        ? "bg-brand-gold border-brand-gold text-black"
+                        : "border-white/[0.1] bg-black/40 group-hover:border-white/[0.2]"
+                    }`}
+                  >
                     {rememberMe && (
                       <svg className="w-3.5 h-3.5 fill-current stroke-current" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeWidth="3" d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"/>
+                        <path strokeWidth="3" d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z" />
                       </svg>
                     )}
                   </div>
-                  <span className="text-xs text-brand-muted group-hover:text-brand-text transition-colors">Keep me signed in</span>
+                  <span className="text-xs text-brand-muted group-hover:text-brand-text transition-colors">
+                    Keep me signed in
+                  </span>
                 </label>
               </div>
 
@@ -321,7 +365,11 @@ export default function Login() {
                   <>
                     <svg className="animate-spin h-5 w-5 text-[#080a0f]" fill="none" viewBox="0 0 24 24">
                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      />
                     </svg>
                     <span>Authenticating System...</span>
                   </>
@@ -337,77 +385,38 @@ export default function Login() {
             {/* Separator */}
             <div className="relative flex items-center justify-center my-2">
               <div className="absolute inset-x-0 h-px bg-white/[0.05]" />
-              <span className="relative z-10 bg-[#0d1117] px-4 font-mono text-[9px] uppercase tracking-widest text-brand-muted">Secure Multi-Pass Auth</span>
+              <span className="relative z-10 bg-[#0d1117] px-4 font-mono text-[9px] uppercase tracking-widest text-brand-muted">
+                Secure Multi-Pass Auth
+              </span>
             </div>
 
             {/* Social logins - FULLY INTERACTIVE SIMULATIONS */}
             <div className="grid grid-cols-1 gap-3">
-
               <button
-               onClick={()=>{
-                window.location.href=
-                  "https://software-engineering-team-ai.onrender.com/auth/github";
-               }}
-               className="flex items-center justify-center gap-2 bg-white/[0.01] hover:bg-white/[0.04] border border-white/[0.05] hover:border-white/[0.1] text-brand-text text-xs py-3 rounded-2xl transition-all duration-200"
->
+                onClick={() => {
+                  window.location.href = "https://software-engineering-team-ai.onrender.com/auth/github";
+                }}
+                className="flex items-center justify-center gap-2 bg-white/[0.01] hover:bg-white/[0.04] border border-white/[0.05] hover:border-white/[0.1] text-brand-text text-xs py-3 rounded-2xl transition-all duration-200"
+              >
                 <FiGithub className="text-base" />
                 <span>Continue with GitHub</span>
-                 </button>
+              </button>
 
-              <div className="flex justify-center">
+              <button
+                onClick={() => handleGoogleLogin()}
+                className="flex items-center justify-center gap-2 bg-white/[0.01] hover:bg-white/[0.04] border border-white/[0.05] hover:border-white/[0.1] text-brand-text text-xs py-3 rounded-2xl transition-all duration-200"
+              >
+                <FcGoogle className="text-base" />
+                <span>Continue With Google</span>
+              </button>
 
-                <GoogleLogin
-                  onSuccess={async (credentialResponse) => {
-
-                    try {
-
-                      const data =
-                        await googleLogin(
-                          credentialResponse.credential
-                        );
-
-                      localStorage.setItem(
-                        "token",
-                        data.access_token
-                      );
-
-                      login(
-                        data.access_token
-                      );
-
-                      navigate(
-                        "/dashboard"
-                      );
-
-                    } catch (error) {
-
-                      console.error(error);
-
-                      setErrorMsg(
-                        "Google Login Failed"
-                      );
-                    }
-                  }}
-
-                  onError={() => {
-
-                    setErrorMsg(
-                      "Google Login Failed"
-                    );
-                  }}
-
-                />
-           
-           </div>
-
-            </div>
-
-            {/* Redirect to signup */}
-            <div className="text-center pt-2">
-              <span className="text-xs text-brand-muted">New to the platform? </span>
-              <Link to="/signup" className="text-xs font-bold text-brand-gold hover:text-amber-300 transition-colors">
-                Register Credentials
-              </Link>
+              {/* Redirect to signup */}
+              <div className="text-center pt-2">
+                <span className="text-xs text-brand-muted">New to the platform? </span>
+                <Link to="/signup" className="text-xs font-bold text-brand-gold hover:text-amber-300 transition-colors">
+                  Register Credentials
+                </Link>
+              </div>
             </div>
           </div>
         </motion.div>
@@ -416,13 +425,13 @@ export default function Login() {
       {/* ── HIGH TECH CREDENTIAL RECOVERY MODAL ── */}
       <AnimatePresence>
         {isForgotOpen && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 bg-[#080a0f]/90 backdrop-blur-md flex items-center justify-center z-50 p-4"
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.95, y: 10 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.95, y: 10 }}
@@ -432,7 +441,7 @@ export default function Login() {
                 <span className="text-xs uppercase font-mono font-bold text-brand-gold tracking-widest flex items-center gap-2">
                   <FiTerminal /> credentials-inspector.sh
                 </span>
-                <button 
+                <button
                   onClick={() => setIsForgotOpen(false)}
                   className="text-brand-muted hover:text-white transition-colors"
                 >
@@ -442,8 +451,10 @@ export default function Login() {
 
               <form onSubmit={handleTriggerRecovery} className="space-y-4 font-mono">
                 <div className="space-y-1.5">
-                  <label className="text-[10px] text-brand-muted uppercase font-bold tracking-wider">Registered Email Domain</label>
-                  <input 
+                  <label className="text-[10px] text-brand-muted uppercase font-bold tracking-wider">
+                    Registered Email Domain
+                  </label>
+                  <input
                     type="email"
                     required
                     placeholder="architect@company.com"
@@ -453,7 +464,7 @@ export default function Login() {
                   />
                 </div>
 
-                <button 
+                <button
                   type="submit"
                   disabled={isForgotChecking}
                   className="w-full bg-brand-gold text-black font-bold py-3.5 rounded-xl text-xs uppercase tracking-wider transition active:scale-95 disabled:opacity-55"
@@ -477,10 +488,6 @@ export default function Login() {
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* ── HIGH TECH OAUTH HANDSHAKE OVERLAY ── */}
-     
-
     </div>
   );
 }

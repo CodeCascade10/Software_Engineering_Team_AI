@@ -9,6 +9,7 @@ from api.routes.logs import router as logs_router
 from fastapi.middleware.cors import CORSMiddleware
 from api.routes.files import router as files_router
 from api.routes.orchestrator import router as orchestrator_router
+from api.routes.google_auth import router as google_router
 from api.routes import agents
 from api.routes import reviewer
 from api.routes import planner
@@ -47,6 +48,9 @@ app.include_router(
 )
 app.include_router(
     github_auth_router
+)
+app.include_router(
+    google_router
 )
 
 @app.get("/")
