@@ -1,4 +1,7 @@
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, EmailStr, Field
+from pymongo.errors import PyMongoError
+import re
 
 from database.mongodb import db
 
@@ -16,12 +19,28 @@ router = APIRouter(
 )
 
 
-@router.post("/signup")
-async def signup(data: dict):
+class SignupData(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=72)
 
-    existing_user = await db.users.find_one({
-        "email": data["email"]
-    })
+
+class LoginData(BaseModel):
+    email: EmailStr
+    password: str = Field(min_length=1, max_length=72)
+
+
+@router.post("/signup")
+async def signup(data: SignupData):
+
+    email = str(data.email).strip().lower()
+
+    try:
+        existing_user = await db.users.find_one({
+            "email": {"$regex": f"^{re.escape(email)}$", "$options": "i"}
+        })
+    except PyMongoError as exc:
+        raise HTTPException(status_code=503, detail="Account service is temporarily unavailable") from exc
 
     if existing_user:
         raise HTTPException(
@@ -29,17 +48,18 @@ async def signup(data: dict):
             detail="User already exists"
         )
 
-    hashed_password = hash_password(
-        data["password"]
-    )
+    hashed_password = hash_password(data.password)
 
     user_data = {
-        "name": data["name"],
-        "email": data["email"],
+        "name": data.name.strip(),
+        "email": email,
         "password": hashed_password
     }
 
-    await db.users.insert_one(user_data)
+    try:
+        await db.users.insert_one(user_data)
+    except PyMongoError as exc:
+        raise HTTPException(status_code=503, detail="Account service is temporarily unavailable") from exc
 
     return {
         "message": "User created successfully"
@@ -47,27 +67,25 @@ async def signup(data: dict):
 
 
 @router.post("/login")
-async def login(data: dict):
+async def login(data: LoginData):
 
-    user = await db.users.find_one({
-        "email": data["email"]
-    })
+    email = str(data.email).strip().lower()
 
-    if not user:
+    try:
+        user = await db.users.find_one({
+            "email": {"$regex": f"^{re.escape(email)}$", "$options": "i"}
+        })
+    except PyMongoError as exc:
+        raise HTTPException(status_code=503, detail="Account service is temporarily unavailable") from exc
+
+    if (
+        not user
+        or not user.get("password")
+        or not verify_password(data.password, user["password"])
+    ):
         raise HTTPException(
             status_code=401,
-            detail="Invalid email"
-        )
-
-    valid_password = verify_password(
-        data["password"],
-        user["password"]
-    )
-
-    if not valid_password:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid password"
+            detail="Invalid email or password"
         )
 
     token = create_access_token({

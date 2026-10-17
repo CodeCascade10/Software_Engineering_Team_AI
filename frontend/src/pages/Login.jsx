@@ -1,17 +1,17 @@
 import { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { FiMail, FiLock, FiArrowRight, FiGithub, FiCpu, FiTerminal, FiZap, FiActivity, FiInfo } from "react-icons/fi";
-import { FcGoogle } from "react-icons/fc";
 
 import API from "../api/axios";
 import { useAuth } from "../contexts/AuthContext";
 
-import { useGoogleLogin } from "@react-oauth/google";
+import { GoogleLogin } from "@react-oauth/google";
 import { googleLogin } from "../services/googleAuthService";
 
 export default function Login() {
   const navigate = useNavigate();
+  const location = useLocation();
   const { login } = useAuth();
 
   const [formData, setFormData] = useState({
@@ -25,38 +25,31 @@ export default function Login() {
   // Futuristic Interactive States
   const [isForgotOpen, setIsForgotOpen] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
-  const [isForgotChecking, setIsForgotChecking] = useState(false);
   const [forgotTerminalLogs, setForgotTerminalLogs] = useState("");
 
-  const handleGoogleLogin = useGoogleLogin({
+  const handleGoogleLogin = async ({ credential } = {}) => {
+    if (!credential) {
+      setErrorMsg("Google did not return a sign-in credential. Please try again.");
+      return;
+    }
 
-  onSuccess: async (tokenResponse) => {
-
-    const userResponse = await fetch(
-      "https://www.googleapis.com/oauth2/v3/userinfo",
-      {
-        headers: {
-          Authorization: `Bearer ${tokenResponse.access_token}`,
-        },
-      }
-    );
-
-    const googleUser = await userResponse.json();
-
-    const data = await googleLogin(
-      googleUser
-    );
-
-    localStorage.setItem(
-      "token",
-      data.access_token
-    );
-
-    login(data.access_token);
-
-    navigate("/dashboard");
-  },
-});
+    try {
+      const data = await googleLogin(credential);
+      if (!data?.access_token) throw new Error("Google sign-in did not return a session.");
+      login(data.access_token);
+      navigate("/dashboard");
+    } catch (err) {
+      console.error("Google session exchange failed", err.code || err.response?.status || err.message);
+      setErrorMsg(
+        err.response?.data?.detail ||
+        (err.code === "ECONNABORTED"
+          ? "The authentication service timed out. Please try again."
+          : err.request
+            ? "Could not reach the authentication service. Check that the backend is running and try again."
+            : err.message || "Google sign-in failed. Please try again.")
+      );
+    }
+  };
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -75,52 +68,27 @@ export default function Login() {
     try {
       setLoading(true);
       const response = await API.post("/auth/login", formData);
+      if (!response.data?.access_token) {
+        throw new Error("The server did not return an access token.");
+      }
       login(response.data.access_token);
       navigate("/dashboard");
     } catch (err) {
-      console.error("API login failed, running premium local auth fallback", err);
-      // Premium Mock Login Fallback so that the user gets authenticated instantly even if local MongoDB backend is idle
-      if (formData.email && formData.password.length >= 6) {
-        setLoading(true);
-        setTimeout(() => {
-          login("mock_jwt_nexus_token_" + Date.now().toString(16));
-          navigate("/dashboard");
-        }, 1200);
-      } else {
-        setErrorMsg("Invalid credentials. Enter any valid email and 6+ character password to authenticate.");
-      }
+      console.error("API login failed", err);
+      setErrorMsg(
+        err.code === "ECONNABORTED"
+          ? "The authentication service timed out. Check that the backend is running, then try again."
+          : err.response?.data?.detail ||
+            "Unable to sign in right now. Check your connection and try again."
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  // Trigger simulated password recovery validation
   const handleTriggerRecovery = (e) => {
     e.preventDefault();
-    if (!forgotEmail.trim()) return;
-    setIsForgotChecking(true);
-    setForgotTerminalLogs(
-      `$> Securing connection to credentials-inspector node...\n$> Initializing handshake with domain ${
-        forgotEmail.split("@")[1] || "host"
-      }...`
-    );
-
-    setTimeout(() => {
-      setForgotTerminalLogs(
-        (prev) =>
-          prev +
-          `\n$> resolving MX target records: OK\n$> verifying domain security registry: VERIFIED\n$> generating encrypted recovery handshake code...`
-      );
-
-      setTimeout(() => {
-        setForgotTerminalLogs(
-          (prev) =>
-            prev +
-            `\n[SUCCESS] Dispatching multi-pass recovery token to ${forgotEmail}.\nScan complete. Integrity verified.`
-        );
-        setIsForgotChecking(false);
-      }, 1500);
-    }, 1500);
+    setForgotTerminalLogs("Password reset email is not configured for this service. Contact support to recover your account.");
   };
 
   // Framer motion variants
@@ -255,6 +223,12 @@ export default function Login() {
               <h2 className="text-3xl font-extrabold text-white tracking-tight">Welcome Back</h2>
               <p className="text-brand-muted text-sm mt-1">Authenticate to access the orchestration dashboard</p>
             </div>
+
+            {location.state?.message && (
+              <div role="status" className="rounded-xl border border-green-400/20 bg-green-400/5 px-4 py-3 text-sm text-green-300">
+                {location.state.message}
+              </div>
+            )}
 
             {/* Error Message Box */}
             <AnimatePresence>
@@ -402,13 +376,19 @@ export default function Login() {
                 <span>Continue with GitHub</span>
               </button>
 
-              <button
-                onClick={() => handleGoogleLogin()}
-                className="flex items-center justify-center gap-2 bg-white/[0.01] hover:bg-white/[0.04] border border-white/[0.05] hover:border-white/[0.1] text-brand-text text-xs py-3 rounded-2xl transition-all duration-200"
-              >
-                <FcGoogle className="text-base" />
-                <span>Continue With Google</span>
-              </button>
+              <div className="flex justify-center overflow-hidden rounded-2xl">
+                <GoogleLogin
+                  onSuccess={handleGoogleLogin}
+                  onError={() => setErrorMsg("Google sign-in could not be completed. Please try again.")}
+                  use_fedcm_for_button
+                  theme="outline"
+                  size="large"
+                  text="continue_with"
+                  shape="pill"
+                  logo_alignment="left"
+                  width="288"
+                />
+              </div>
 
               {/* Redirect to signup */}
               <div className="text-center pt-2">
@@ -439,7 +419,7 @@ export default function Login() {
             >
               <div className="flex items-center justify-between border-b border-white/[0.05] pb-3">
                 <span className="text-xs uppercase font-mono font-bold text-brand-gold tracking-widest flex items-center gap-2">
-                  <FiTerminal /> credentials-inspector.sh
+                  <FiTerminal /> account recovery
                 </span>
                 <button
                   onClick={() => setIsForgotOpen(false)}
@@ -452,7 +432,7 @@ export default function Login() {
               <form onSubmit={handleTriggerRecovery} className="space-y-4 font-mono">
                 <div className="space-y-1.5">
                   <label className="text-[10px] text-brand-muted uppercase font-bold tracking-wider">
-                    Registered Email Domain
+                    Registered Email Address
                   </label>
                   <input
                     type="email"
@@ -466,10 +446,9 @@ export default function Login() {
 
                 <button
                   type="submit"
-                  disabled={isForgotChecking}
                   className="w-full bg-brand-gold text-black font-bold py-3.5 rounded-xl text-xs uppercase tracking-wider transition active:scale-95 disabled:opacity-55"
                 >
-                  {isForgotChecking ? "Auditing DNS Domain..." : "Trigger Inspect Handshake"}
+                  Get Recovery Instructions
                 </button>
               </form>
 
@@ -482,7 +461,7 @@ export default function Login() {
 
               <div className="flex items-center gap-1.5 text-[9px] text-brand-muted">
                 <FiInfo />
-                <span>Input your secure email domain to trigger credentials audit checks.</span>
+                <span>No reset email is sent until email delivery is configured. Contact support for account recovery.</span>
               </div>
             </motion.div>
           </motion.div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -9,7 +9,6 @@ import {
   FiArrowRight,
   FiCheck,
   FiX,
-  FiTerminal,
 } from "react-icons/fi";
 
 import API from "../api/axios";
@@ -25,18 +24,28 @@ export default function Signup() {
     confirmPassword: "",
   });
 
-  const [passwordStrength, setPasswordStrength] = useState({
-    score: 0,
-    label: "None",
-    color: "bg-white/[0.06]",
-  });
+  const checklist = {
+    length: formData.password.length >= 8,
+    number: /[0-9]/.test(formData.password),
+    special: /[^A-Za-z0-9]/.test(formData.password),
+    match: formData.password === formData.confirmPassword && formData.password !== "",
+  };
 
-  const [checklist, setChecklist] = useState({
-    length: false,
-    number: false,
-    special: false,
-    match: false,
-  });
+  const score = [
+    formData.password.length > 0,
+    checklist.length,
+    checklist.number,
+    checklist.special,
+  ].filter(Boolean).length;
+  const strengthLabels = ["None", "Weak", "Moderate", "Strong", "Hyper Secure"];
+  const strengthColors = [
+    "bg-white/[0.06]",
+    "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]",
+    "bg-orange-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]",
+    "bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]",
+    "bg-green-500 shadow-[0_0_10px_rgba(61,220,132,0.5)]",
+  ];
+  const passwordStrength = { score, label: strengthLabels[score], color: strengthColors[score] };
 
   const [acceptedTerms, setAcceptedTerms] = useState(false);
 
@@ -44,104 +53,12 @@ export default function Signup() {
 
   const [errorMsg, setErrorMsg] = useState("");
 
-  const [successRegistered, setSuccessRegistered] = useState(false);
-
-  const [successLogs, setSuccessLogs] = useState([]);
-
-  useEffect(() => {
-
-    const pwd = formData.password;
-
-    const cpwd = formData.confirmPassword;
-
-    const newChecklist = {
-      length: pwd.length >= 8,
-      number: /[0-9]/.test(pwd),
-      special: /[^A-Za-z0-9]/.test(pwd),
-      match: pwd === cpwd && pwd !== "",
-    };
-
-    setChecklist(newChecklist);
-
-    let score = 0;
-
-    if (pwd.length > 0) score += 1;
-
-    if (newChecklist.length) score += 1;
-
-    if (newChecklist.number) score += 1;
-
-    if (newChecklist.special) score += 1;
-
-    let label = "None";
-
-    let color = "bg-white/[0.06]";
-
-    if (score === 1) {
-
-      label = "Weak";
-
-      color = "bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]";
-
-    } else if (score === 2) {
-
-      label = "Moderate";
-
-      color = "bg-orange-500 shadow-[0_0_10px_rgba(245,158,11,0.5)]";
-
-    } else if (score === 3) {
-
-      label = "Strong";
-
-      color = "bg-amber-400 shadow-[0_0_10px_rgba(251,191,36,0.5)]";
-
-    } else if (score === 4) {
-
-      label = "Hyper Secure";
-
-      color = "bg-green-500 shadow-[0_0_10px_rgba(61,220,132,0.5)]";
-    }
-
-    setPasswordStrength({
-      score,
-      label,
-      color,
-    });
-
-  }, [formData.password, formData.confirmPassword]);
-
   const handleChange = (e) => {
 
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
-  };
-
-  const runSuccessTerminalSim = async () => {
-
-    const logs = [
-      "Establishing secure connection...",
-      "API handshake completed...",
-      "Initializing AI workspace...",
-      "Generating credentials...",
-      "Securing encrypted session...",
-      "Account created successfully...",
-    ];
-
-    for (let i = 0; i < logs.length; i++) {
-
-      await new Promise((res) => setTimeout(res, 450));
-
-      setSuccessLogs((prev) => [
-        ...prev,
-        logs[i],
-      ]);
-    }
-
-    await new Promise((res) => setTimeout(res, 700));
-
-    navigate("/login");
   };
 
   const handleSubmit = async (e) => {
@@ -187,22 +104,31 @@ export default function Signup() {
 
       setLoading(true);
 
-      await API.post("/auth/signup", {
+      const response = await API.post("/auth/signup", {
         name: formData.name,
-        email: formData.email,
+        email: formData.email.trim(),
         password: formData.password,
       });
 
-      setSuccessRegistered(true);
+      if (response.status !== 200 && response.status !== 201) {
+        throw new Error("The server could not create the account.");
+      }
 
-      runSuccessTerminalSim();
+      navigate("/login", {
+        replace: true,
+        state: { message: "Account created. Sign in with your email and password." },
+      });
 
     } catch (err) {
 
-      console.error(err);
+      console.error("API signup failed", err);
 
       setErrorMsg(
-        "Signup failed. Email may already exist."
+        err.code === "ECONNABORTED"
+          ? "The authentication service timed out. Check that the backend is running, then try again."
+          :
+        err.response?.data?.detail ||
+        "Unable to create your account right now. Check your connection and try again."
       );
 
     } finally {
@@ -222,8 +148,6 @@ export default function Signup() {
       <div className="absolute inset-0 backdrop-blur-[120px]" />
 
       <AnimatePresence mode="wait">
-
-        {!successRegistered ? (
 
           <motion.div
             key="signup-form"
@@ -628,98 +552,6 @@ export default function Signup() {
             </div>
 
           </motion.div>
-
-        ) : (
-
-          <motion.div
-            key="success-terminal"
-            initial={{
-              opacity: 0,
-              scale: 0.95,
-            }}
-            animate={{
-              opacity: 1,
-              scale: 1,
-            }}
-            className="w-full max-w-[520px] bg-black border border-amber-400/20 rounded-[28px] p-8 shadow-[0_0_60px_rgba(251,191,36,0.12)] relative z-10 font-mono"
-          >
-
-            <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6">
-
-              <div className="flex items-center gap-2">
-
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500/80" />
-
-                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80" />
-
-                <div className="w-2.5 h-2.5 rounded-full bg-green-500/80" />
-
-              </div>
-
-              <span className="text-amber-400 text-xs uppercase tracking-widest flex items-center gap-2">
-
-                <FiTerminal />
-
-                secure_auth.sh
-
-              </span>
-
-            </div>
-
-            <div className="space-y-3 min-h-[180px] text-white/90 text-sm">
-
-              {successLogs.map((log, index) => (
-
-                <motion.div
-                  key={index}
-                  initial={{
-                    opacity: 0,
-                    x: -10,
-                  }}
-                  animate={{
-                    opacity: 1,
-                    x: 0,
-                  }}
-                  className="flex items-start gap-2"
-                >
-
-                  <span className="text-amber-400 font-bold">
-                    $&gt;
-                  </span>
-
-                  <span>{log}</span>
-
-                </motion.div>
-
-              ))}
-
-              {successLogs.length < 6 && (
-
-                <div className="flex items-center gap-2">
-
-                  <span className="text-amber-400 font-bold animate-pulse">
-                    $&gt;
-                  </span>
-
-                  <span className="w-2 h-4 bg-amber-400 inline-block animate-pulse" />
-
-                </div>
-
-              )}
-
-            </div>
-
-            <div className="mt-8 pt-4 border-t border-white/[0.08] flex items-center justify-between text-xs text-zinc-500">
-
-              <span>Status: Success</span>
-
-              <span>Redirecting...</span>
-
-            </div>
-
-          </motion.div>
-
-        )}
 
       </AnimatePresence>
 
