@@ -22,16 +22,6 @@ export default function useSandbox() {
   const [isEditingFile, setIsEditingFile] =
     useState(false);
 
-  const [
-    activeFileTerminalOutput,
-    setActiveFileTerminalOutput,
-  ] = useState("");
-
-  const [
-    isRunningFileScript,
-    setIsRunningFileScript,
-  ] = useState(false);
-
   return {
 
     // FILES
@@ -56,11 +46,5 @@ export default function useSandbox() {
     isEditingFile,
     setIsEditingFile,
 
-    // TERMINAL
-    activeFileTerminalOutput,
-    setActiveFileTerminalOutput,
-
-    isRunningFileScript,
-    setIsRunningFileScript,
   };
 }

@@ -195,7 +195,14 @@ Install dependencies:
 
 ```bash
 pip install -r requirements.txt
+pip install -r requirements-dev.txt  # pytest and pytest-asyncio for offline tests
+python -m pytest -q
 ```
+
+`backend/requirements-dev.txt` installs the test runner. Run the test command from
+the repository root after activating the backend virtual environment; the suite
+uses scripted model responses and mocked persistence, so it does not need Groq
+or MongoDB credentials.
 
 Create `.env`
 

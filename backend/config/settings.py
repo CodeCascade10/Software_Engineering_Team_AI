@@ -22,6 +22,17 @@ class Settings:
 
     GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
+    VALIDATION_SANDBOX_ENABLED = os.getenv("VALIDATION_SANDBOX_ENABLED", "false").lower() in {"1", "true", "yes"}
+    ALLOW_SKIPPED_SANDBOX_COMPLETION = os.getenv("ALLOW_SKIPPED_SANDBOX_COMPLETION", "false").lower() in {"1", "true", "yes"}
+    SANDBOX_MODE = os.getenv("SANDBOX_MODE", "subprocess").lower()
+    SANDBOX_TIMEOUT_SECONDS = int(os.getenv("SANDBOX_TIMEOUT_SECONDS", "90"))
+    SANDBOX_OUTPUT_LIMIT_BYTES = int(os.getenv("SANDBOX_OUTPUT_LIMIT_BYTES", "200000"))
+    SANDBOX_MEMORY_MB = int(os.getenv("SANDBOX_MEMORY_MB", "768"))
+    SANDBOX_CPU_SECONDS = int(os.getenv("SANDBOX_CPU_SECONDS", "60"))
+    MAX_REPAIR_ATTEMPTS = int(os.getenv("MAX_REPAIR_ATTEMPTS", "2"))
+    WORKFLOW_HEARTBEAT_SECONDS = int(os.getenv("WORKFLOW_HEARTBEAT_SECONDS", "5"))
+    WORKFLOW_STALE_AFTER_SECONDS = int(os.getenv("WORKFLOW_STALE_AFTER_SECONDS", "120"))
+
     GITHUB_CLIENT_ID = os.getenv(
     "GITHUB_CLIENT_ID"
     )

@@ -1,179 +1,53 @@
-export async function startProjectWorkflow(
-  projectId,
-  setLogs,
-  pushToast
-) {
+import API from "../api/axios";
 
-  try {
+const wait = (milliseconds) => new Promise((resolve) => setTimeout(resolve, milliseconds));
 
-    pushToast(
-      "Starting autonomous workflow..."
-    );
+export async function startProjectWorkflow(projectId, setLogs, pushToast) {
+  await API.post(`/workflow/start/${encodeURIComponent(projectId)}`);
+  pushToast("Four-agent workflow started", "success");
 
-    const workflowLogs = [
-      {
-        agent: "Planner",
-        status: "running",
-        message:
-          "Analyzing project requirements and generating architecture...",
-      },
+  const deadline = Date.now() + 10 * 60 * 1000;
+  while (Date.now() < deadline) {
+    let statusResponse;
+    let logsResponse;
+    try {
+      [statusResponse, logsResponse] = await Promise.all([
+        API.get(`/workflow/status/${encodeURIComponent(projectId)}`),
+        API.get(`/logs/${encodeURIComponent(projectId)}`),
+      ]);
+    } catch (error) {
+      if (error.response && error.response.status < 500) throw error;
+      await wait(1800);
+      continue;
+    }
 
-      {
-        agent: "Planner",
-        status: "completed",
-        message:
-          "Microservice layout and database schema generated.",
-      },
-
-      {
-        agent: "Backend Dev",
-        status: "running",
-        message:
-          "Generating FastAPI routes and authentication handlers...",
-      },
-
-      {
-        agent: "Backend Dev",
-        status: "completed",
-        message:
-          "REST endpoints, JWT middleware and database connectors created.",
-      },
-
-      {
-        agent: "Frontend Dev",
-        status: "running",
-        message:
-          "Building React components and Tailwind layouts...",
-      },
-
-      {
-        agent: "Frontend Dev",
-        status: "completed",
-        message:
-          "Dashboard UI and responsive glassmorphism design completed.",
-      },
-
-      {
-        agent: "Code Reviewer",
-        status: "running",
-        message:
-          "Running static analysis and validating security rules...",
-      },
-
-      {
-        agent: "Code Reviewer",
-        status: "completed",
-        message:
-          "No major vulnerabilities detected. Quality score: 94/100.",
-      },
-
-      {
-        agent: "Executor",
-        status: "running",
-        message:
-          "Deploying sandbox runtime and validating execution...",
-      },
-
-      {
-        agent: "Executor",
-        status: "completed",
-        message:
-          "Application container compiled and running successfully.",
-      },
-    ];
-
-    setLogs((prev) => ({
-      ...prev,
-      [projectId]: [],
+    const logs = logsResponse.data.map((entry) => ({
+      agent: entry.agent,
+      status: entry.status,
+      message: entry.message,
+      timestamp: entry.timestamp,
     }));
+    setLogs(logs);
 
-    for (const item of workflowLogs) {
-
-      await new Promise((res) =>
-        setTimeout(res, 1100)
-      );
-
-      setLogs((prev) => ({
-        ...prev,
-
-        [projectId]: [
-          ...(prev[projectId] || []),
-          item,
-        ],
-      }));
+    const { status, error } = statusResponse.data;
+    if (status === "completed") {
+      pushToast("All four agents completed", "success");
+      return statusResponse.data;
+    }
+    if (status === "needs_review") {
+      pushToast("Generation finished with findings that need review", "error");
+      return statusResponse.data;
+    }
+    if (status === "cancelled") {
+      pushToast("Workflow was cancelled", "error");
+      return statusResponse.data;
+    }
+    if (status === "failed") {
+      throw new Error(error || "Agent workflow failed");
     }
 
-    pushToast(
-      "Autonomous workflow completed",
-      "success"
-    );
-
-  } catch (err) {
-
-    console.error(err);
-
-    pushToast(
-      "Workflow execution failed",
-      "error"
-    );
+    await wait(1200);
   }
-}
 
-export async function runProjectSandbox(
-  setActiveFileTerminalOutput,
-  setIsRunningFileScript,
-  pushToast
-) {
-
-  try {
-
-    setIsRunningFileScript(true);
-
-    setActiveFileTerminalOutput("");
-
-    pushToast(
-      "Launching sandbox runtime..."
-    );
-
-    const terminalLogs = [
-      "$> Booting CodeNexus runtime...",
-      "$> Loading dependencies...",
-      "$> Connecting secure execution bridge...",
-      "$> Mounting container filesystem...",
-      "$> Initializing FastAPI server...",
-      "$> Server listening on port 8000",
-      "$> Health checks passed.",
-      "$> Sandbox execution completed successfully.",
-    ];
-
-    for (const line of terminalLogs) {
-
-      await new Promise((res) =>
-        setTimeout(res, 700)
-      );
-
-      setActiveFileTerminalOutput(
-        (prev) =>
-          prev + line + "\n"
-      );
-    }
-
-    pushToast(
-      "Sandbox execution completed",
-      "success"
-    );
-
-  } catch (err) {
-
-    console.error(err);
-
-    pushToast(
-      "Sandbox runtime crashed",
-      "error"
-    );
-
-  } finally {
-
-    setIsRunningFileScript(false);
-  }
+  throw new Error("The workflow is still running. Reopen the project to check its status.");
 }

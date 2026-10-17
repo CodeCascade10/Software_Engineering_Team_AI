@@ -1,248 +1,68 @@
-import { useState } from "react";
-
-import { simulateWorkflow } from "../services/workflowSimulator";
-
 import useWorkspace from "./useWorkspace";
-
-import useTelemetry from "./useTelemetry";
-
 import useToast from "./useToast";
-
 import useCommandPalette from "./useCommandPalette";
-
 import useProjects from "./useProjects";
-
 import useLogs from "./useLogs";
-
 import useSandbox from "./useSandbox";
-
-import useAgents from "./useAgents";
-
-import useCluster from "./useCluster";
-
 import useProjectActions from "./useProjectActions";
-
 import useSandboxActions from "./useSandboxActions";
 
-import useAgentActions from "./useAgentActions";
 
-import useClusterActions from "./useClusterActions";
-
-
-
-
-export default function useDashboardBuilder(
-  ALL_COMMANDS
-) {
-
-  // WORKSPACE
- const {
-
-  // tabs
-  activeTab,
-  setActiveTab,
-
-  // workspace
-  activeWorkspaceView,
-  setActiveWorkspaceView,
-
-  // prompt
-  promptInput,
-  setPromptInput,
-
-  // workflow
-  workflowMode,
-  setWorkflowMode,
-
-  // stack
-  stack,
-  setStack,
-
-  // runtime
-  runtime,
-  setRuntime,
-
-  // generation
-  isGenerating,
-  setIsGenerating,
-
-} = useWorkspace();
-
-  // TELEMETRY
+export default function useDashboardBuilder(allCommands) {
   const {
-    telemetryStats,
-  } = useTelemetry();
-
-  // TOASTS
-  const {
-    toasts,
-    pushToast,
-  } = useToast();
-
-  // COMMANDS
-  const {
-    isCommandPaletteOpen,
-    setIsCommandPaletteOpen,
-
-    commandPaletteQuery,
-    setCommandPaletteQuery,
-
-    filteredCommands,
-  } = useCommandPalette(
-    ALL_COMMANDS
-  );
-
-  // PROJECTS
-  const {
-    projects,
-    setProjects,
-
-    loading,
-    setLoading,
-  } = useProjects();
-
-  // LOGS
-  const {
-    logs,
-    setLogs,
-  } = useLogs();
-
-  // SANDBOX
-  const sandbox =
-    useSandbox();
-
-  // AGENTS
-  const agents =
-    useAgents();
-
-  // CLUSTER
-  const cluster =
-    useCluster();
-
-  // PROJECT ACTIONS
-  const projectActions =
-    useProjectActions({
-      pushToast,
-
-      projects,
-      setProjects,
-
-      setLogs,
-    });
-
-  // SANDBOX ACTIONS
-  const sandboxActions =
-    useSandboxActions({
-      pushToast,
-
-      ...sandbox,
-    });
-
-  // AGENT ACTIONS
-  const agentActions =
-    useAgentActions({
-      pushToast,
-
-      ...agents,
-    });
-
-  // CLUSTER ACTIONS
-  const clusterActions =
-    useClusterActions({
-      pushToast,
-
-      ...cluster,
-    });
-  
-
-  const handleStartWorkflow =
-  async () => {
-
-    await simulateWorkflow({
-
-      setLogs,
-
-      setIsGenerating,
-
-      pushToast,
-
-      workflowMode,
-
-      runtime,
-    });
-  };
-
-  return {
-
-    // workspace
     activeTab,
     setActiveTab,
-
-    activeWorkspaceView,
-    setActiveWorkspaceView,
-
     promptInput,
     setPromptInput,
-
-    workflowMode,
-    setWorkflowMode,
-
     stack,
     setStack,
-
-    runtime,
-    setRuntime,
-
     isGenerating,
     setIsGenerating,
-
-    // telemetry
-    telemetryStats,
-
-    // toasts
-    toasts,
-    pushToast,
-
-    // commands
+  } = useWorkspace();
+  const { toasts, pushToast } = useToast();
+  const {
     isCommandPaletteOpen,
     setIsCommandPaletteOpen,
-
     commandPaletteQuery,
     setCommandPaletteQuery,
-
     filteredCommands,
+  } = useCommandPalette(allCommands);
+  const { projects, setProjects } = useProjects();
+  const { logs, setLogs } = useLogs();
+  const sandbox = useSandbox();
 
-    // projects
+  const projectActions = useProjectActions({
+    pushToast,
+    setProjects,
+    setLogs,
+  });
+  const sandboxActions = useSandboxActions({
+    pushToast,
+    ...sandbox,
+  });
+
+  return {
+    activeTab,
+    setActiveTab,
+    promptInput,
+    setPromptInput,
+    stack,
+    setStack,
+    isGenerating,
+    setIsGenerating,
+    toasts,
+    pushToast,
+    isCommandPaletteOpen,
+    setIsCommandPaletteOpen,
+    commandPaletteQuery,
+    setCommandPaletteQuery,
+    filteredCommands,
     projects,
     setProjects,
-
-    loading,
-    setLoading,
-
-    // logs
     logs,
     setLogs,
-    handleStartWorkflow,
-
-    // sandbox
     ...sandbox,
-
-    // agents
-    ...agents,
-
-    // cluster
-    ...cluster,
-
-    // project actions
     ...projectActions,
-
-    // sandbox actions
     ...sandboxActions,
-
-    // agent actions
-    ...agentActions,
-
-    // cluster actions
-    ...clusterActions,
   };
 }

@@ -57,26 +57,18 @@ export default function NewDashboard() {
     promptInput,
     setPromptInput,
 
-    workflowMode,
-    setWorkflowMode,
-
     stack,
     setStack,
-
-    runtime,
-    setRuntime,
 
     isGenerating,
     setIsGenerating,
 
+    projects,
     logs,
     setLogs,
 
     handleStartWorkflow,
     handleCreateProject,
-
-    // telemetry
-    telemetryStats,
 
     // commands
     isCommandPaletteOpen,
@@ -107,35 +99,10 @@ export default function NewDashboard() {
     isEditingFile,
     setIsEditingFile,
 
-    activeFileTerminalOutput,
-
-    isRunningFileScript,
-
-    // agents
-    selectedAgentNode,
-
-    agentDetails,
-
-    agentDiagnosticLogs,
-
-    isAgentDiagnosing,
-
-    // cluster
-    clusterPods,
-
-    isClusterScaling,
-
-    // actions
-    handleAgentMatrixClick,
-
-    handleProvisionPod,
-    handleScaleDownPod,
-
     handleFetchFiles,
 
     handleSaveFileContent,
 
-    handleRunScript,
   } = useDashboardBuilder(ALL_COMMANDS);
 
   const handleGenerateProject = async () => {
@@ -146,13 +113,14 @@ export default function NewDashboard() {
 
     try {
       setIsGenerating(true);
+      setLogs([]);
       pushToast("Initializing autonomous AI engineering team...");
       const project = await handleCreateProject(promptInput, stack);
-      await handleStartWorkflow();
+      await handleStartWorkflow(project._id);
       await handleFetchFiles(project._id);
     } catch (err) {
-      console.error(err);
-      pushToast("Failed to initialize workflow", "error");
+      console.error("Project workflow failed", err.response?.status || err.message);
+      pushToast(err.response?.data?.detail || err.message || "Failed to initialize workflow", "error");
     } finally {
       setIsGenerating(false);
     }
@@ -200,18 +168,14 @@ export default function NewDashboard() {
               <PromptOrchestrator
                 promptInput={promptInput}
                 setPromptInput={setPromptInput}
-                workflowMode={workflowMode}
-                setWorkflowMode={setWorkflowMode}
                 stack={stack}
                 setStack={setStack}
-                runtime={runtime}
-                setRuntime={setRuntime}
                 handleGenerateProject={handleGenerateProject}
                 isGenerating={isGenerating}
               />
               {isGenerating && <WorkflowConsole logs={logs} isGenerating={isGenerating} />}
               {!isGenerating && (
-                <AgentGrid handleAgentMatrixClick={handleAgentMatrixClick} />
+                <AgentGrid />
               )}
             </div>
           ) : null
@@ -220,7 +184,7 @@ export default function NewDashboard() {
         content={
           openedProject && !isGenerating ? (
             <DashboardContent
-              activeTab={activeTab}
+              projects={projects}
               sandboxProps={{
                 projectFiles,
                 setProjectFiles,
@@ -232,11 +196,8 @@ export default function NewDashboard() {
                 editingFileContent,
                 setEditingFileContent,
                 handleSaveFileContent,
-                handleRunScript,
                 isEditingFile,
                 setIsEditingFile,
-                isRunningFileScript,
-                activeFileTerminalOutput,
                 pushToast,
                 onResetWorkspace: () => {
                   setOpenedProject(null);

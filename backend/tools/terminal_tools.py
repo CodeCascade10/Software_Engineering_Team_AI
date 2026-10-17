@@ -1,154 +1,73 @@
-import subprocess
+"""Compatibility helpers that delegate process execution to the sandbox runner."""
+import shlex
+import shutil
+import sys
+import tempfile
+from pathlib import Path
+
+from services.sandbox import _free_port, _run_server_probe, run_isolated_command
+
+
+def _argv(command):
+    args = shlex.split(command) if isinstance(command, str) else list(command)
+    shell_chars = set(";&|<>`\n\r")
+    shell_launcher = Path(args[0]).name.lower() in {"sh", "bash", "zsh", "fish", "cmd", "powershell"} if args else False
+    if not args or shell_launcher or any(any(char in shell_chars for char in token) for token in args):
+        raise ValueError("Commands must be nonempty argv lists without shell operators")
+    return args
 
 
 def run_python_file(filepath: str):
-
-    try:
-
-        result = subprocess.run(
-            ["python3", filepath],
-            capture_output=True,
-            text=True,
-            timeout=20
-        )
-
-        return {
-            "success": result.returncode == 0,
-            "stdout": result.stdout,
-            "stderr": result.stderr
-        }
-
-    except Exception as e:
-
-        return {
-            "success": False,
-            "stdout": "",
-            "stderr": str(e)
-        }
+    path = Path(filepath).resolve()
+    with tempfile.TemporaryDirectory(prefix="legacy-python-run-") as temporary:
+        work = Path(temporary) / "project"
+        shutil.copytree(path.parent, work)
+        copied = work / path.name
+        result = run_isolated_command([sys.executable, str(copied)], cwd=work, timeout=20)
+    return {"success": result["passed"], "stdout": result["output"], "stderr": result["reason"] if not result["passed"] else "", "status": result["status"]}
 
 
 def install_requirements(requirements_path: str):
-
-    try:
-
-        result = subprocess.run(
-            [
-                "pip",
-                "install",
-                "-r",
-                requirements_path
-            ],
-            capture_output=True,
-            text=True,
-            timeout=120
+    requirements = Path(requirements_path).resolve()
+    with tempfile.TemporaryDirectory(prefix="legacy-deps-check-") as temporary:
+        result = run_isolated_command(
+            [sys.executable, "-m", "pip", "install", "--disable-pip-version-check", "--no-input", "--no-compile", "--target", str(Path(temporary) / "site"), "-r", str(requirements)],
+            cwd=temporary, timeout=120,
         )
+    return {"success": result["passed"], "stdout": result["output"], "stderr": "" if result["passed"] else result["output"], "status": result["status"]}
 
-        return {
-            "success": result.returncode == 0,
-            "stdout": result.stdout,
-            "stderr": result.stderr
-        }
 
-    except Exception as e:
-
-        return {
-            "success": False,
-            "stdout": "",
-            "stderr": str(e)
-        }
-def run_fastapi_server():
-
-    try:
-
-        result = subprocess.run(
-            [
-                "python3",
-                "-m",
-                "uvicorn",
-                "generated_projects.generated_backend.main:app",
-                "--host",
-                "127.0.0.1",
-                "--port",
-                "8000"
-            ],
-            capture_output=True,
-            text=True,
-            timeout=15
+def run_fastapi_server(project_dir="generated_projects/generated_backend"):
+    root = Path(project_dir).resolve()
+    with tempfile.TemporaryDirectory(prefix="legacy-fastapi-run-") as temporary:
+        work = Path(temporary) / "project"
+        shutil.copytree(root, work)
+        port = _free_port()
+        result = _run_server_probe(
+            [sys.executable, "-m", "uvicorn", "main:app", "--host", "127.0.0.1", "--port", str(port)],
+            cwd=work, port=port, path="/health", timeout=20,
         )
-
-        return {
-            "success": result.returncode == 0,
-            "stdout": result.stdout,
-            "stderr": result.stderr
-        }
-
-    except subprocess.TimeoutExpired:
-
-        return {
-            "success": True,
-            "stdout": "FastAPI server started successfully.",
-            "stderr": ""
-        }
-
-    except Exception as e:
-
-        return {
-            "success": False,
-            "stdout": "",
-            "stderr": str(e)
-        }
-    
-import requests
+    return {"success": result["passed"], "stdout": result.get("output", ""), "stderr": result.get("reason", ""), "status": result["status"]}
 
 
 def test_api_endpoint():
+    import urllib.request
 
     try:
+        with urllib.request.urlopen("http://127.0.0.1:8000/", timeout=5) as response:
+            body = response.read(200_000).decode("utf-8", errors="replace")
+            return {"success": 200 <= response.status < 300, "status_code": response.status, "response": body}
+    except Exception as exc:
+        return {"success": False, "status_code": 500, "response": str(exc)}
 
-        response = requests.get(
-            "http://127.0.0.1:8000/"
-        )
 
-        return {
-            "success": response.status_code == 200,
-            "status_code": response.status_code,
-            "response": response.text
-        }
-
-    except Exception as e:
-
-        return {
-            "success": False,
-            "status_code": 500,
-            "response": str(e)
-        }
-    
-def run_terminal_command(command: str):
-
+def run_terminal_command(command, *, cwd="."):
     try:
+        result = run_isolated_command(_argv(command), cwd=cwd, timeout=60)
+        return {"success": result["passed"], "stdout": result["output"], "stderr": "" if result["passed"] else result["output"], "status": result["status"]}
+    except Exception as exc:
+        return {"success": False, "stdout": "", "stderr": str(exc), "status": "failed"}
 
-        result = subprocess.run(
-            command,
-            shell=True,
-            capture_output=True,
-            text=True,
-            timeout=60
-        )
 
-        return {
-            "success": result.returncode == 0,
-            "stdout": result.stdout,
-            "stderr": result.stderr
-        }
-
-    except Exception as e:
-
-        return {
-            "success": False,
-            "stdout": "",
-            "stderr": str(e)
-        }
-    
-def git_command(command: str):
-
-    return run_terminal_command(command)
+def git_command(command, *, cwd="generated_projects"):
+    return run_terminal_command(command, cwd=cwd)

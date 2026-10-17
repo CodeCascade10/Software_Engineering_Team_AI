@@ -3,10 +3,6 @@ import {
   saveProjectFile,
 } from "../services/projectService";
 
-import {
-  runProjectSandbox,
-} from "../services/workflowService";
-
 export default function useSandboxActions({
   pushToast,
 
@@ -21,9 +17,6 @@ export default function useSandboxActions({
   editingFileContent,
   openedProject,
 
-  // terminal
-  setActiveFileTerminalOutput,
-  setIsRunningFileScript,
 }) {
 
   // LOAD FILES
@@ -58,20 +51,8 @@ export default function useSandboxActions({
       );
     };
 
-  // RUN FILE
-  const handleRunScript =
-    async () => {
-
-      await runProjectSandbox(
-        setActiveFileTerminalOutput,
-        setIsRunningFileScript,
-        pushToast
-      );
-    };
-
   return {
     handleFetchFiles,
     handleSaveFileContent,
-    handleRunScript,
   };
 }

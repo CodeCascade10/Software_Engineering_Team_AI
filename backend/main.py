@@ -4,7 +4,7 @@ from api.routes.test_db import router as test_db_router
 from api.routes.auth import router as auth_router
 from api.routes.users import router as users_router
 from api.routes.projects import router as projects_router
-from api.routes.workflow import router as workflow_router
+from api.routes.workflow import router as workflow_router, workflow_lifespan
 from api.routes.logs import router as logs_router
 from fastapi.middleware.cors import CORSMiddleware
 from api.routes.files import router as files_router
@@ -17,7 +17,7 @@ from api.routes.github_auth import (
     router as github_auth_router
 )
 
-app = FastAPI()
+app = FastAPI(lifespan=workflow_lifespan)
 
 app.add_middleware(
     CORSMiddleware,

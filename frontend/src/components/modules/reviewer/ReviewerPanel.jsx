@@ -1,10 +1,11 @@
+import ReactMarkdown from "react-markdown";
 import ReviewerForm from "./ReviewerForm";
 
 import ReviewerResult from "./ReviewerResult";
 
 import useReviewer from "./useReviewer";
 
-export default function ReviewerPanel() {
+export default function ReviewerPanel({ reviewContent }) {
 
   const {
 
@@ -56,8 +57,7 @@ export default function ReviewerPanel() {
               mt-2
               text-sm
             ">
-              AI-powered static analysis, bug detection,
-              security auditing, and performance inspection.
+              LLM-assisted review findings for the generated project. This review does not claim to run tests or static analysis tools.
             </p>
           </div>
 
@@ -78,6 +78,13 @@ export default function ReviewerPanel() {
           </div>
         </div>
       </div>
+
+      {reviewContent && (
+        <article className="rounded-[28px] border border-brand-green/20 bg-[#0c0e14]/70 p-8 prose prose-invert max-w-none">
+          <h2 className="text-xl font-bold text-white">Generated project review</h2>
+          <ReactMarkdown>{reviewContent}</ReactMarkdown>
+        </article>
+      )}
 
       {/* MAIN CONTENT */}
       <div className="

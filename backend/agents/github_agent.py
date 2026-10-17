@@ -12,22 +12,16 @@ def github_agent(state: GraphState):
     )
 
     commands = [
-
-        "cd generated_projects && git init",
-
-        "cd generated_projects && git add .",
-
-        (
-            'cd generated_projects && '
-            'git commit -m "AI generated full-stack project"'
-        )
+        ["git", "init"],
+        ["git", "add", "."],
+        ["git", "commit", "-m", "AI generated full-stack project"],
     ]
 
     outputs = []
 
     for command in commands:
 
-        result = git_command(command)
+        result = git_command(command, cwd="generated_projects")
 
         outputs.append({
             "command": command,

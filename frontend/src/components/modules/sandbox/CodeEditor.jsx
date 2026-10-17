@@ -1,15 +1,13 @@
-import { FiPlay, FiSave } from "react-icons/fi";
+import { FiSave } from "react-icons/fi";
 
 export default function CodeEditor({
   activeFileTab,
   editingFileContent,
   setEditingFileContent,
   handleSaveFileContent,
-  handleRunScript,
   isEditingFile,
   setIsEditingFile,
   openedProject,
-  isRunningFileScript,
 }) {
   return (
     <div className="bg-[#0c0e14]/60 border border-white/[0.05] rounded-3xl overflow-hidden h-full flex flex-col">
@@ -41,18 +39,12 @@ export default function CodeEditor({
             Save
           </button>
 
-          {/* RUN */}
-          <button
-            onClick={handleRunScript}
-            disabled={isRunningFileScript}
-            className="h-9 px-4 rounded-xl bg-brand-gold hover:bg-amber-300 text-black text-xs font-bold font-mono flex items-center gap-2 transition-all disabled:opacity-60"
+          <span
+            title="An isolated sandbox runtime is not configured. Generated code is not executed."
+            className="h-9 px-3 rounded-xl border border-white/[0.06] text-xs font-mono text-brand-muted flex items-center"
           >
-            <FiPlay />
-
-            {isRunningFileScript
-              ? "Running..."
-              : "Run"}
-          </button>
+            Run unavailable
+          </span>
         </div>
       </div>
 
@@ -80,7 +72,7 @@ export default function CodeEditor({
         </span>
 
         <span>
-          Sandbox Editor v2.0
+          Generated source editor
         </span>
       </div>
     </div>

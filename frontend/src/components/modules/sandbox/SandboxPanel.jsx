@@ -11,12 +11,9 @@ export default function SandboxPanel({
   setEditingFileContent,
 
   handleSaveFileContent,
-  handleRunScript,
 
   isEditingFile,
   setIsEditingFile,
-
-  isRunningFileScript,
 }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[320px_1fr] gap-6 h-[700px]">
@@ -35,11 +32,9 @@ export default function SandboxPanel({
         editingFileContent={editingFileContent}
         setEditingFileContent={setEditingFileContent}
         handleSaveFileContent={handleSaveFileContent}
-        handleRunScript={handleRunScript}
         isEditingFile={isEditingFile}
         setIsEditingFile={setIsEditingFile}
         openedProject={openedProject}
-        isRunningFileScript={isRunningFileScript}
       />
     </div>
   );

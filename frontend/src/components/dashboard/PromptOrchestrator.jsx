@@ -11,8 +11,6 @@ import {
 export default function PromptOrchestrator({
   promptInput,
   setPromptInput,
-  workflowMode,
-  setWorkflowMode,
   stack,
   setStack,
   handleGenerateProject,
@@ -40,8 +38,7 @@ export default function PromptOrchestrator({
 
         {/* DESC */}
         <p className="text-brand-muted text-sm leading-relaxed max-w-3xl">
-          Describe your software idea. Autonomous AI agents will architect,
-          generate, review, debug, and deploy your application in a collaborative workflow.
+          Describe your software idea. The Planner, Backend Developer, Frontend Developer, and Code Reviewer will work through one connected project workflow.
         </p>
 
         {/* TEXTAREA */}
@@ -54,95 +51,20 @@ export default function PromptOrchestrator({
           />
         </div>
 
-        {/* FEATURES */}
+        {/* REAL AGENT PIPELINE */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <button
-            onClick={() => {
-              setWorkflowMode("Planner Only");
-              if (!promptInput.trim()) {
-                setPromptInput("Design a high-level system architecture blueprint for a secure MERN application with database schemas.");
-              }
-            }}
-            className={`text-left rounded-2xl border p-5 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
-              workflowMode === "Planner Only"
-                ? "bg-brand-gold/10 border-brand-gold/30 shadow-[0_0_20px_rgba(245,166,35,0.15)]"
-                : "bg-black/20 border-white/[0.05] hover:bg-black/35 hover:border-white/[0.12]"
-            }`}
-          >
-            <FiLayers className={`${workflowMode === "Planner Only" ? "text-brand-gold" : "text-brand-muted"} text-lg mb-3`} />
-            <div className="text-white font-semibold text-sm">
-              Planner
+          {[
+            { name: "Planner", description: "Architecture and API contract", icon: FiLayers, color: "text-brand-gold" },
+            { name: "Backend Dev", description: "Stack-specific server files", icon: FiServer, color: "text-brand-blue" },
+            { name: "Frontend Dev", description: "UI integrated with generated APIs", icon: FiCode, color: "text-purple-400" },
+            { name: "Code Reviewer", description: "Review findings saved to review.md", icon: FiShield, color: "text-brand-green" },
+          ].map(({ name, description, icon: Icon, color }) => (
+            <div key={name} className="text-left rounded-2xl border border-white/[0.05] bg-black/20 p-5">
+              <Icon className={`${color} text-lg mb-3`} />
+              <div className="text-white font-semibold text-sm">{name}</div>
+              <div className="text-brand-muted text-xs mt-1">{description}</div>
             </div>
-            <div className="text-brand-muted text-xs mt-1">
-              System design & flow
-            </div>
-          </button>
-
-          <button
-            onClick={() => {
-              setWorkflowMode("Frontend Only");
-              if (!promptInput.trim()) {
-                setPromptInput("Generate a beautiful React notes dashboard application interface.");
-              }
-            }}
-            className={`text-left rounded-2xl border p-5 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
-              workflowMode === "Frontend Only"
-                ? "bg-purple-500/10 border-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.15)]"
-                : "bg-black/20 border-white/[0.05] hover:bg-black/35 hover:border-white/[0.12]"
-            }`}
-          >
-            <FiCode className={`${workflowMode === "Frontend Only" ? "text-purple-400" : "text-brand-muted"} text-lg mb-3`} />
-            <div className="text-white font-semibold text-sm">
-              Frontend
-            </div>
-            <div className="text-brand-muted text-xs mt-1">
-              React layouts & design
-            </div>
-          </button>
-
-          <button
-            onClick={() => {
-              setWorkflowMode("Backend Only");
-              if (!promptInput.trim()) {
-                setPromptInput("Generate a FastAPI backend with PostgreSQL connections and note CRUD routes.");
-              }
-            }}
-            className={`text-left rounded-2xl border p-5 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
-              workflowMode === "Backend Only"
-                ? "bg-brand-blue/10 border-brand-blue/30 shadow-[0_0_20px_rgba(74,158,255,0.15)]"
-                : "bg-black/20 border-white/[0.05] hover:bg-black/35 hover:border-white/[0.12]"
-            }`}
-          >
-            <FiServer className={`${workflowMode === "Backend Only" ? "text-brand-blue" : "text-brand-muted"} text-lg mb-3`} />
-            <div className="text-white font-semibold text-sm">
-              Backend
-            </div>
-            <div className="text-brand-muted text-xs mt-1">
-              FastAPI REST API routes
-            </div>
-          </button>
-
-          <button
-            onClick={() => {
-              setWorkflowMode("Reviewer Only");
-              if (!promptInput.trim()) {
-                setPromptInput("Review the backend database connection pool and verifying auth routers for latency vulnerabilities.");
-              }
-            }}
-            className={`text-left rounded-2xl border p-5 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] ${
-              workflowMode === "Reviewer Only"
-                ? "bg-brand-green/10 border-brand-green/30 shadow-[0_0_20px_rgba(74,222,128,0.15)]"
-                : "bg-black/20 border-white/[0.05] hover:bg-black/35 hover:border-white/[0.12]"
-            }`}
-          >
-            <FiShield className={`${workflowMode === "Reviewer Only" ? "text-brand-green" : "text-brand-muted"} text-lg mb-3`} />
-            <div className="text-white font-semibold text-sm">
-              Reviewer
-            </div>
-            <div className="text-brand-muted text-xs mt-1">
-              Security & QA analysis
-            </div>
-          </button>
+          ))}
         </div>
 
         {/* TECH STACK SELECTOR */}

@@ -9,8 +9,6 @@ import {
 export default function ProjectCard({
   project,
   expandedProject,
-  openedProject,
-
   setExpandedProject,
   fetchLogs,
 
@@ -22,9 +20,6 @@ export default function ProjectCard({
 
   const isExpanded =
     expandedProject === project._id;
-
-  const isOpened =
-    openedProject === project._id;
 
   return (
     <div className="bg-[#0c0e14]/60 border border-white/[0.05] rounded-3xl overflow-hidden">
@@ -70,7 +65,9 @@ export default function ProjectCard({
             className={`px-3 py-1 rounded-full text-[10px] uppercase tracking-widest font-mono border ${
               project.status === "completed"
                 ? "bg-brand-green/10 border-brand-green/20 text-brand-green"
-                : "bg-brand-gold/10 border-brand-gold/20 text-brand-gold"
+                : project.status === "needs_review" || project.status === "failed"
+                  ? "bg-red-500/10 border-red-500/20 text-red-300"
+                  : "bg-brand-gold/10 border-brand-gold/20 text-brand-gold"
             }`}
           >
             {project.status}

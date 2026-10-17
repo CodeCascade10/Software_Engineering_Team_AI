@@ -1,5 +1,5 @@
 import {
-  createLocalProject,
+  createProject,
 } from "../services/projectService";
 
 import {
@@ -9,8 +9,6 @@ import {
 export default function useProjectActions({
   pushToast,
 
-  // projects
-  projects,
   setProjects,
 
   // logs
@@ -21,11 +19,9 @@ export default function useProjectActions({
   const handleCreateProject =
     async (prompt, stack) => {
 
-      return await createLocalProject(
+      return await createProject(
         prompt,
         stack,
-
-        projects,
         setProjects,
 
         pushToast

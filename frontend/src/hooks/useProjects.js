@@ -1,31 +1,30 @@
 import { useEffect, useState } from "react";
 
+import { listProjects } from "../services/projectService";
+
+
 export default function useProjects() {
-
-  const [projects, setProjects] =
-    useState([]);
-
-  const [loading, setLoading] =
-    useState(false);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let active = true;
 
-    const localProjects =
-      JSON.parse(
-        localStorage.getItem(
-          "nexus_local_projects"
-        ) || "[]"
-      );
+    listProjects()
+      .then((items) => {
+        if (active) setProjects(items);
+      })
+      .catch((error) => {
+        console.error("Could not load projects", error.response?.status || error.message);
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
 
-    setProjects(localProjects);
-
+    return () => {
+      active = false;
+    };
   }, []);
 
-  return {
-    projects,
-    setProjects,
-
-    loading,
-    setLoading,
-  };
+  return { projects, setProjects, loading, setLoading };
 }
