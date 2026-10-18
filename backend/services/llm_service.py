@@ -5,7 +5,7 @@ from groq import Groq
 from config.settings import settings
 
 
-MODEL_NAME = "llama-3.3-70b-versatile"
+MODEL_NAME = "openai/gpt-oss-120b"
 
 
 @dataclass

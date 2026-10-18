@@ -9,6 +9,7 @@ FILE_BLOCK = re.compile(
     re.MULTILINE | re.DOTALL,
 )
 FILE_MARKER = re.compile(r"^FILE:", re.MULTILINE)
+FILE_DECLARATION = re.compile(r"^FILE:\s*([^\r\n]+)", re.MULTILINE)
 MAX_GENERATED_FILES = 40
 MAX_GENERATED_CONTENT_CHARS = 1_500_000
 
@@ -48,7 +49,18 @@ def extract_generated_files(response_text: str) -> list[dict[str, str]]:
     matches = list(FILE_BLOCK.finditer(response_text))
     declared_count = len(FILE_MARKER.findall(response_text))
     if not matches or declared_count != len(matches):
-        raise FileOutputError("malformed_block", "Every FILE declaration must have one complete fenced block")
+        parsed = {match.group("name").strip() for match in matches}
+        declared = [name.strip() for name in FILE_DECLARATION.findall(response_text)]
+        unparsed = [name for name in declared if name not in parsed]
+        if response_text.rstrip().endswith("```"):
+            hint = "Check for missing fences or FILE: lines inside file content."
+        else:
+            hint = "The response did not end with a closing fence (likely truncated)."
+        raise FileOutputError(
+            "malformed_block",
+            f"Found {declared_count} FILE declarations but only {len(matches)} complete "
+            f"fenced blocks. Incomplete or unmatched: {unparsed[:10] or 'none identified'}. {hint}",
+        )
 
     files = []
     seen = set()
